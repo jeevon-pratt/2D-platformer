@@ -1,0 +1,22 @@
+{ "frames": [
+   {
+    "filename": "obunga.ase",
+    "frame": { "x": 0, "y": 0, "w": 87, "h": 139 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 87, "h": 139 },
+    "sourceSize": { "w": 87, "h": 139 },
+    "duration": 100
+   }
+ ],
+ "meta": {
+  "app": "https://github.com/LibreSprite/LibreSprite/",
+  "version": "1.0-dev",
+  "format": "RGBA8888",
+  "size": { "w": 320, "h": 139 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "default", "from": 0, "to": 0, "direction": "forward" }
+  ]
+ }
+}

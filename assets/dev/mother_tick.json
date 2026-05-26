@@ -1,0 +1,69 @@
+{ "frames": [
+   {
+    "filename": "mother_tick 0.ase",
+    "frame": { "x": 0, "y": 0, "w": 124, "h": 50 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 124, "h": 50 },
+    "sourceSize": { "w": 124, "h": 50 },
+    "duration": 100
+   },
+   {
+    "filename": "mother_tick 1.ase",
+    "frame": { "x": 0, "y": 50, "w": 124, "h": 50 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 124, "h": 50 },
+    "sourceSize": { "w": 124, "h": 50 },
+    "duration": 60
+   },
+   {
+    "filename": "mother_tick 2.ase",
+    "frame": { "x": 124, "y": 0, "w": 124, "h": 50 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 124, "h": 50 },
+    "sourceSize": { "w": 124, "h": 50 },
+    "duration": 60
+   },
+   {
+    "filename": "mother_tick 3.ase",
+    "frame": { "x": 124, "y": 50, "w": 124, "h": 50 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 124, "h": 50 },
+    "sourceSize": { "w": 124, "h": 50 },
+    "duration": 60
+   },
+   {
+    "filename": "mother_tick 4.ase",
+    "frame": { "x": 248, "y": 0, "w": 124, "h": 50 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 124, "h": 50 },
+    "sourceSize": { "w": 124, "h": 50 },
+    "duration": 60
+   },
+   {
+    "filename": "mother_tick 5.ase",
+    "frame": { "x": 248, "y": 50, "w": 124, "h": 50 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 124, "h": 50 },
+    "sourceSize": { "w": 124, "h": 50 },
+    "duration": 40
+   }
+ ],
+ "meta": {
+  "app": "https://github.com/LibreSprite/LibreSprite/",
+  "version": "1.0-dev",
+  "format": "RGBA8888",
+  "size": { "w": 372, "h": 128 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "default", "from": 0, "to": 0, "direction": "forward" },
+   { "name": "walk", "from": 1, "to": 4, "direction": "forward" },
+   { "name": "idle", "from": 5, "to": 5, "direction": "forward" }
+  ]
+ }
+}
