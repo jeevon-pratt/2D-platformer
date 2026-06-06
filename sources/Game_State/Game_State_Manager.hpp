@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>                       // std::unique_ptr
 #include <stack>                        // std::stack
 #include <unordered_map>                // std::unordered_map
 
@@ -11,6 +12,9 @@
  */
 class GameStateManager final
 {
+public:
+    using STATE_POINTER = std::unique_ptr<GameState>;
+
 public:
     // IMPLEMENTATION
     // ==============
@@ -39,9 +43,6 @@ public:
     // Renders the current state game loop
     void Render();
 
-    // Automatically destroys the dynamically allocated game state objects
-    ~GameStateManager();
-
 private:
     // INTERNAL FUNCTIONS
     // ==================
@@ -65,5 +66,5 @@ private:
     std::stack<GAME_STATE_TYPE> m_stack;
 
     // Hash lookup table for game state objects
-    std::unordered_map<GAME_STATE_TYPE, GameState*> m_stateTable;
+    std::unordered_map<GAME_STATE_TYPE, STATE_POINTER> m_stateTable;
 };

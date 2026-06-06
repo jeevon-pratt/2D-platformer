@@ -2,7 +2,6 @@
 
 #include <cmath>                    // abs, pow, and sqrt functions
 #include <iostream>                 // std::ostream
-#include <limits>                   // std::numeric_limits<float>::epsilon constant
 
 #include "Entity/Game_Object.hpp"   // GameObject class
 #include "Media/Renderer.hpp"       // Renderer::PIXELS_PER_METER constant
@@ -82,7 +81,7 @@ b2Vec2 ConvertToScreenCoord(const Sprite& sprite, b2Vec2 worldPos, b2Vec2 camTra
 
 bool ApproxEq(float num1, float num2)
 {
-    return abs(num1 - num2) <= ( std::max(num1, num2) * std::numeric_limits<float>::epsilon() );
+    return abs(num1 - num2) <= 0.0001f;
 }
 
 

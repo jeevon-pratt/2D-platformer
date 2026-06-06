@@ -33,6 +33,12 @@ _TTF_Font* FontManager::Get(std::string_view filepath, uint8_t ptSize)
 {
     auto key = std::make_pair(filepath.data(), ptSize);
 
+    if ( m_fonts.count(key) == 0 )
+    {
+        GAME_2D_LOG_ERROR("Could not find font %s (point size: %u).\n\n", filepath.data(), ptSize);
+        return nullptr;
+    }
+
     return m_fonts[key];
 }
 

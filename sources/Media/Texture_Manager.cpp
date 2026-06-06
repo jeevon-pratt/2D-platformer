@@ -46,6 +46,12 @@ void TextureManager::LoadTexture(std::string_view filepath)
 
 SDL_Texture* TextureManager::Get(std::string_view filepath)
 {
+    if ( m_textures.count(filepath.data()) == 0 )
+    {
+        GAME_2D_LOG_ERROR("Could not find %s.\n\n", filepath.data());
+        return nullptr;
+    }
+
     return m_textures[ filepath.data() ];
 }
 

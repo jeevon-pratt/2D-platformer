@@ -17,13 +17,13 @@ PlayerStateManager::PlayerStateManager():
 
     m_stateTable.reserve(MAX_PLAYER_STATES);
 
-    m_stateTable.emplace( IDLE_STATE,        new IdleState      );
-    m_stateTable.emplace( WALK_STATE,        new WalkState      );
-    m_stateTable.emplace( JUMP_STATE,        new JumpState      );
-    m_stateTable.emplace( FREE_FALL_STATE,   new FreeFallState  );
-    m_stateTable.emplace( HIT_GROUND_STATE,  new HitGroundState );
-    m_stateTable.emplace( ATTACK_STATE,      new AttackState    );
-    m_stateTable.emplace( DEAD_STATE,        new DeadState      );
+    m_stateTable.emplace( IDLE_STATE,        std::make_unique<IdleState>()      );
+    m_stateTable.emplace( WALK_STATE,        std::make_unique<WalkState>()      );
+    m_stateTable.emplace( JUMP_STATE,        std::make_unique<JumpState>()      );
+    m_stateTable.emplace( FREE_FALL_STATE,   std::make_unique<FreeFallState>()  );
+    m_stateTable.emplace( HIT_GROUND_STATE,  std::make_unique<HitGroundState>() );
+    m_stateTable.emplace( ATTACK_STATE,      std::make_unique<AttackState>()    );
+    m_stateTable.emplace( DEAD_STATE,        std::make_unique<DeadState>()      );
 
     // Set the initial player state
     // ============================
@@ -90,12 +90,4 @@ void PlayerStateManager::Update()
 
     m_stateTable.at(m_currentState)
         ->OnUpdate(*m_playerData);
-}
-
-
-
-PlayerStateManager::~PlayerStateManager()
-{
-    for (auto& [type, state] : m_stateTable)
-        delete state;
 }

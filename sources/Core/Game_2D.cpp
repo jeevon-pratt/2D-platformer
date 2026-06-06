@@ -1,4 +1,5 @@
 #include <box2d/box2d.h>            // Box2D functionality
+#include <json/json.h>              // Jsoncpp functionality
 #include <SDL2/SDL.h>               // SDL functionality
 #include <SDL2/SDL_image.h>         // IMG_GetError and IMG_Quit functions
 #include <SDL2/SDL_ttf.h>           // TTF_Init and TTF_Quit functions, TTF_Font struct
@@ -10,12 +11,14 @@
     #include <filesystem>           // std::filesystem
 #endif
 
+#include <fstream>                  // std::ifstream
 #include <iostream>                 // std::cerr
 #include <string>                   // std::string
 
 #include "Core/Game_2D.hpp"         // Game2D class
 #include "Utility/Log.hpp"          // InitLog, CloseLogFile and Log macro functions
 #include "Utility/Math.hpp"         // ConvertToMeters function
+#include "Utility/Memory.hpp"       // LoadJson function
 #include "Utility/Save_System.hpp"  // OpenSaveFile and CloseSaveFile functions
 
 
@@ -32,8 +35,9 @@
     static constexpr const char* BINARY_DIR = "../../../bin/release";
 #endif
 
-static constexpr const char* LOG_FILE_PATH  = "../../sources/log.txt";
-static constexpr const char* SAVE_FILE_PATH = "../../sources/save.json";
+static constexpr const char* ASSET_FILE_PATH = "../../internal/assets.json";
+static constexpr const char* LOG_FILE_PATH   = "../../internal/log.txt";
+static constexpr const char* SAVE_FILE_PATH  = "../../internal/save.json";
 
 
 // Initialization Flags
@@ -51,7 +55,6 @@ static constexpr uint16_t   WINDOW_HEIGHT     = 800;
 static constexpr uint8_t    MAX_OBJECTS       = 23;
 static constexpr uint8_t    MAX_ENEMIES       = 50;
 static constexpr uint8_t    MAX_LAYER_SPRITES = 100;
-static constexpr std::array FONT_SIZES        = { 12, 18, 24, 36, 48, 60 };
 static const     b2Vec2     G_ACCELERATION    = b2Vec2(0.0f, -9.81f);
 
 
@@ -178,31 +181,24 @@ void Game2D::RunInternal()
 
 void Game2D::LoadAssets()
 {
-    // Loading Audio
-    m_audioManager.LoadAudio("../../assets/audio/8_bit_music.wav"              );
-    m_audioManager.LoadAudio("../../assets/audio/God-of-War-Ragnarok-Theme.wav");
-    m_audioManager.LoadAudio("../../assets/audio/God-of-War-Theme.wav"         );
-    m_audioManager.LoadAudio("../../assets/audio/hit_ground.wav"               );
-    m_audioManager.LoadAudio("../../assets/audio/videogame-death-sound.wav"    );
-
-
-    // Loading Fonts
-    for (uint8_t ptSize : FONT_SIZES)
-    {
-        m_fontManager.LoadFont("../../assets/fonts/cocogoose.ttf", ptSize);
-        m_fontManager.LoadFont("../../assets/fonts/runescape.ttf", ptSize);
-    }
+    Json::Value root = LoadJson(ASSET_FILE_PATH);
 
 
     // Loading Textures
-    m_textureManager.LoadTexture("../../assets/gfx/mother_tick-Sheet.png");
-    m_textureManager.LoadTexture("../../assets/gfx/wood_block.png"       );
-    m_textureManager.LoadTexture("../../assets/gfx/soccer_ball.png"      );
-    m_textureManager.LoadTexture("../../assets/gfx/grass_block.png"      );
-    m_textureManager.LoadTexture("../../assets/gfx/obunga.jpg"           );
-    m_textureManager.LoadTexture("../../assets/gfx/ground.png"           );
-    m_textureManager.LoadTexture("../../assets/gfx/death_star.png"       );
-    m_textureManager.LoadTexture("../../assets/gfx/menu_background.png"  );
+    for (const Json::Value& filepath : root["textures"])
+        m_textureManager.LoadTexture(filepath.asCString());
+
+    // Loading Audio
+    for (const Json::Value& filepath : root["audio"])
+        m_audioManager.LoadAudio(filepath.asCString());
+
+
+    // Loading Fonts
+    for (const Json::Value& fontSize : root["font_sizes"])
+    {
+        for (const Json::Value& filepath : root["fonts"])
+            m_fontManager.LoadFont(filepath.asCString(), fontSize.asUInt());
+    }
 }
 
 

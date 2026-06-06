@@ -1,10 +1,11 @@
-#include <json/json.h>          // Json::Value, Json::CharReaderBuilder, and Json::String class
+#include <json/json.h>          // Jsoncpp functionality
 #include <SDL2/SDL_render.h>    // SDL_SetTextureAlphaMod function
 
 #include <fstream>              // std::ifstream
 
 #include "Media/Sprite.hpp"     // Sprite class
 #include "Utility/Log.hpp"      // GAME_2D_LOG_ERROR macro function
+#include "Utility/Memory.hpp"   // LoadJson function
 
 
 // ******************
@@ -45,28 +46,8 @@ Sprite::Sprite(const SpriteCreateInfo& info):
 
 void Sprite::LoadAnimations(std::string_view filepath)
 {
-    static std::ifstream s_file;
-    Json::CharReaderBuilder builder;
-    Json::Value root;
-    Json::String errs;
-
-    builder["collectComments"] = false;
-
-    s_file.open( filepath.data() );
-
-
-    if ( !Json::parseFromStream(builder, s_file, &root, &errs) )
-    {
-        GAME_2D_LOG_ERROR("Couldn't open %s\n%s\n\n", filepath.data(), errs.c_str());
-        s_file.clear();
-        s_file.close();
-        return;
-    }
-
-    s_file.close();
-
-
     // Sprite data
+    Json::Value root      = LoadJson(filepath);
     Json::Value frameData = root["frames"];
     Json::Value metaData  = root["meta"];
     Json::Value tagData   = metaData["frameTags"];
@@ -167,6 +148,13 @@ void Sprite::SetAlphaMod(uint8_t alpha)
 
 void Sprite::PlayAnimation(std::string_view name)
 {
+    if ( m_animationSet.count(name.data()) == 0 )
+    {
+        GAME_2D_LOG_ERROR("Could not display \'%s\' animation.\n\n", name.data());
+        return;
+    }
+
+
     Animation& cycle = m_animationSet[ name.data() ];
 
     cycle.StepTime();

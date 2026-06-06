@@ -61,7 +61,7 @@ private:
     //
     // Note: The frame duration for animation must not be 0. Otherwise, the
     //       animation will not be displayed properly.
-    uint8_t m_elapsedTime;
+    uint32_t m_elapsedTime;
 
     // The meta data for each animation frame
     //
@@ -72,5 +72,5 @@ private:
     // The std::vector index to the current animation frame
     //
     // Note: When a cycle is completed, the current index loops back to 0.
-    uint16_t m_currentIndex;
+    uint32_t m_currentIndex;
 };

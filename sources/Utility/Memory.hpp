@@ -4,6 +4,10 @@
     #include <vcruntime.h>  // operator new annotations
 #endif
 
+#include <json/json.h>      // Jsoncpp functionality
+#include <string_view>      // std::string_view
+
+
 
 // ****************
 // MEMORY FUNCTIONS
@@ -28,3 +32,20 @@
  //
  // Note: Information is recorded using the debug logging system.
 void operator delete(void* memory, size_t size);
+
+
+
+
+// *****************
+// JSON IO FUNCTIONS
+// *****************
+
+ // Function for loading data from JSON File
+ //
+ // Note: Empty data is returned and prints an error message is logged upon failure.
+Json::Value LoadJson(std::string_view filepath);
+
+ // Function for overwriting data from JSON File
+ //
+ // Note: An error message is logged upon failure.
+void OverWriteJson(std::string_view filepath, Json::Value& root);

@@ -31,6 +31,12 @@ void AudioManager::LoadAudio(std::string_view filepath)
 {
     GAME_2D_LOG_DEBUG("Loading audio: %s\n\n", filepath.data());
 
+    if ( m_data.count(filepath.data()) == 0 )
+    {
+        GAME_2D_LOG_ERROR("Could not find %s.\n\n", filepath.data());
+        return;
+    }
+
 
     AudioData& data = m_data[ filepath.data() ];
 
@@ -57,6 +63,13 @@ void AudioManager::LoadAudio(std::string_view filepath)
 
 void AudioManager::PlayAudio(std::string_view filepath, bool loopEnabled)
 {
+    if ( m_data.count(filepath.data()) == 0 )
+    {
+        GAME_2D_LOG_ERROR("Could not find %s.\n\n", filepath.data());
+        return;
+    }
+
+
     AudioData& data = m_data[ filepath.data() ];
 
     if (!data.isPlaying)
@@ -92,6 +105,13 @@ void AudioManager::PlayAudio(std::string_view filepath, bool loopEnabled)
 
 void AudioManager::PauseAudio(std::string_view filepath)
 {
+    if ( m_data.count(filepath.data()) == 0 )
+    {
+        GAME_2D_LOG_ERROR("Could not find %s.\n\n", filepath.data());
+        return;
+    }
+
+
     AudioData& data = m_data[ filepath.data() ];
 
     // Stops the playing of the audio file
@@ -107,6 +127,13 @@ void AudioManager::PauseAudio(std::string_view filepath)
 
 void AudioManager::ResetAudio(std::string_view filepath)
 {
+    if ( m_data.count(filepath.data()) == 0 )
+    {
+        GAME_2D_LOG_ERROR("Could not find %s.\n\n", filepath.data());
+        return;
+    }
+
+
     AudioData& data = m_data[ filepath.data() ];
 
     SDL_ClearQueuedAudio(data.deviceID);

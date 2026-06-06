@@ -1,0 +1,25 @@
+{
+    "textures": [
+        "../../assets/gfx/mother_tick-Sheet.png",
+        "../../assets/gfx/wood_block.png",
+        "../../assets/gfx/soccer_ball.png",
+        "../../assets/gfx/grass_block.png",
+        "../../assets/gfx/obunga.jpg",
+        "../../assets/gfx/ground.png",
+        "../../assets/gfx/death_star.png",
+        "../../assets/gfx/menu_background.png"
+    ],
+
+    "audio": [
+        "../../assets/audio/8_bit_music.wav",
+        "../../assets/audio/hit_ground.wav",
+        "../../assets/audio/videogame-death-sound.wav"
+    ],
+
+    "fonts": [
+        "../../assets/fonts/cocogoose.ttf",
+        "../../assets/fonts/runescape.ttf"
+    ],
+
+    "font_sizes": [12, 18, 24, 36, 48, 60]
+}

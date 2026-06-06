@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>                               // std::unique_ptr
 #include <stack>                                // std::stack
 #include <unordered_map>                        // std::unordered_map
 
@@ -11,6 +12,9 @@
  */
 class PlayerStateManager final
 {
+public:
+    using STATE_POINTER = std::unique_ptr<PlayerState>;
+
 public:
     // IMPLEMENTATION
     // ==============
@@ -36,9 +40,6 @@ public:
     // Updates the active state
     void Update();
 
-    // Frees dynamically allocated state objects
-    ~PlayerStateManager();
-
 private:
     // INTERNAL FUNCTIONS
     // ==================
@@ -62,5 +63,5 @@ private:
     std::stack<PLAYER_STATE_TYPE> m_stack;
 
     // Hash lookup table for player state objects
-    std::unordered_map<PLAYER_STATE_TYPE, PlayerState*> m_stateTable;
+    std::unordered_map<PLAYER_STATE_TYPE, STATE_POINTER> m_stateTable;
 };

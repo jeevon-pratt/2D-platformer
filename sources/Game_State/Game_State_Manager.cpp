@@ -17,17 +17,17 @@ GameStateManager::GameStateManager():
 
     m_stateTable.reserve(MAX_GAME_STATES);
 
-    m_stateTable.emplace( NULL_STATE,      new NullState     );
-    m_stateTable.emplace( MAIN_MENU_STATE, new MainMenuState );
-    m_stateTable.emplace( SETTINGS_STATE,  new SettingsState );
-    m_stateTable.emplace( PAUSED_STATE,    new PausedState   );
-    m_stateTable.emplace( LEVEL_1_STATE,   new Level1State   );
-    m_stateTable.emplace( LEVEL_2_STATE,   new Level2State   );
-    m_stateTable.emplace( LEVEL_3_STATE,   new Level3State   );
-    m_stateTable.emplace( LEVEL_4_STATE,   new Level4State   );
-    m_stateTable.emplace( LEVEL_5_STATE,   new Level5State   );
-    m_stateTable.emplace( GAME_OVER_STATE, new GameOverState );
-    m_stateTable.emplace( QUIT_STATE,      new QuitState     );
+    m_stateTable.emplace( NULL_STATE,      std::make_unique<NullState>()     );
+    m_stateTable.emplace( MAIN_MENU_STATE, std::make_unique<MainMenuState>() );
+    m_stateTable.emplace( SETTINGS_STATE,  std::make_unique<SettingsState>() );
+    m_stateTable.emplace( PAUSED_STATE,    std::make_unique<PausedState>()   );
+    m_stateTable.emplace( LEVEL_1_STATE,   std::make_unique<Level1State>()   );
+    m_stateTable.emplace( LEVEL_2_STATE,   std::make_unique<Level2State>()   );
+    m_stateTable.emplace( LEVEL_3_STATE,   std::make_unique<Level3State>()   );
+    m_stateTable.emplace( LEVEL_4_STATE,   std::make_unique<Level4State>()   );
+    m_stateTable.emplace( LEVEL_5_STATE,   std::make_unique<Level5State>()   );
+    m_stateTable.emplace( GAME_OVER_STATE, std::make_unique<GameOverState>() );
+    m_stateTable.emplace( QUIT_STATE,      std::make_unique<QuitState>()     );
 
     // Set the initial game state
     // ==========================
@@ -107,12 +107,4 @@ void GameStateManager::Render()
 
     m_stateTable.at(m_currentState)
         ->OnRender(*m_gameData);
-}
-
-
-
-GameStateManager::~GameStateManager()
-{
-    for (auto& [type, state] : m_stateTable)
-        delete state;
 }

@@ -61,7 +61,7 @@ void Animation::NextFrame()
 
 void Animation::StepTime()
 {
-    uint8_t dt = (SDL_GetTicks() - m_currentTime);
+    uint32_t dt = (SDL_GetTicks() - m_currentTime);
 
     m_elapsedTime += dt;
 }
