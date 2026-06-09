@@ -18,28 +18,24 @@ static Text s_subtitle;
 
 void MainMenuState::OnEnter(Game2D& app)
 {
-    constexpr uint8_t titleSize       = 48;
-    constexpr uint8_t subtitleSize    = 36;
-    constexpr uint8_t perfDisplaySize = 36;
+    const TTF_Font* titleFont       = app.m_fontManager.Get("cocogoose_48");
+    const TTF_Font* subtitleFont    = app.m_fontManager.Get("cocogoose_36"); 
+    const TTF_Font* perfMonitorFont = app.m_fontManager.Get("runescape_36");
 
-    TTF_Font* titleFont       = app.m_fontManager.Get("../../assets/fonts/cocogoose.ttf", titleSize);
-    TTF_Font* subtitleFont    = app.m_fontManager.Get("../../assets/fonts/cocogoose.ttf", subtitleSize);
-    TTF_Font* perfMonitorFont = app.m_fontManager.Get("../../assets/fonts/runescape.ttf", perfDisplaySize);
-
-    constexpr SDL_Color colorBlue { 0, 0, 175 };
-    constexpr SDL_Color colorBlack { 0, 0, 0 };
+    constexpr SDL_Color COLOR_BLUE  { 0, 0, 175 };
+    constexpr SDL_Color COLOR_BLACK { 0, 0, 0 };
 
 
     s_title.str   = "2D PLATFORMER";
     s_title.font  = titleFont;
-    s_title.color = colorBlue;
+    s_title.color = COLOR_BLUE;
 
     s_subtitle.str   = "by Jee'Von Pratt";
     s_subtitle.font  = subtitleFont;
-    s_subtitle.color = colorBlue;
+    s_subtitle.color = COLOR_BLUE;
 
     app.m_perfMonitor.SetTextFont(perfMonitorFont);
-    app.m_perfMonitor.SetTextColor(colorBlack);
+    app.m_perfMonitor.SetTextColor(COLOR_BLACK);
 
     Window::ShowCursor();
 }

@@ -1,4 +1,4 @@
-#include <json/json.h>          // Jsoncpp functionality
+#include <json/value.h>         // Json::Value class
 #include <SDL2/SDL_render.h>    // SDL_SetTextureAlphaMod function
 
 #include <fstream>              // std::ifstream
@@ -27,7 +27,7 @@ Sprite::Sprite():
     m_useScreenCoord (true),
     m_scrollFactor   (1.0f)
 {
-    m_animationSet.reserve(MAX_SPRITE_ANIMATIONS);
+    m_animations.reserve(MAX_SPRITE_ANIMATIONS);
 }
 
 
@@ -47,10 +47,10 @@ Sprite::Sprite(const SpriteCreateInfo& info):
 void Sprite::LoadAnimations(std::string_view filepath)
 {
     // Sprite data
-    Json::Value root      = LoadJson(filepath);
-    Json::Value frameData = root["frames"];
-    Json::Value metaData  = root["meta"];
-    Json::Value tagData   = metaData["frameTags"];
+    Json::Value root   = LoadJson(filepath);
+    Json::Value frames = root["frames"];
+    Json::Value meta   = root["meta"];
+    Json::Value tags   = meta["frameTags"];
 
     // Every animation frame for the sprite
     std::vector<Frame> totalFrames;
@@ -58,15 +58,15 @@ void Sprite::LoadAnimations(std::string_view filepath)
 
 
     // To store the data for every individual sprite frame
-    for (const Json::Value& currentFrame : frameData)
+    for (const Json::Value& currentFrame : frames)
     {
-        Json::Value sourceData = currentFrame["frame"];
+        Json::Value rect = currentFrame["frame"];
 
         SDL_Rect srcrect;
-        srcrect.x = sourceData["x"].asInt();
-        srcrect.y = sourceData["y"].asInt();
-        srcrect.w = sourceData["w"].asInt();
-        srcrect.h = sourceData["h"].asInt();
+        srcrect.x = rect["x"].asInt();
+        srcrect.y = rect["y"].asInt();
+        srcrect.w = rect["w"].asInt();
+        srcrect.h = rect["h"].asInt();
 
         uint8_t duration = currentFrame["duration"].asUInt();
 
@@ -75,24 +75,24 @@ void Sprite::LoadAnimations(std::string_view filepath)
 
 
     // To create animation sets from the vector of frame structures
-    for (const Json::Value& currentTag : tagData)
+    for (const Json::Value& currentTag : tags)
     {
         Animation cycle;
         std::string cycleName = currentTag["name"].asCString();
 
         uint8_t begin = currentTag["from"].asUInt();
-        uint8_t end = currentTag["to"].asUInt();
+        uint8_t end   = currentTag["to"].asUInt();
 
         // Create an animation set from a subset of frames
         for (uint8_t k = begin; k <= end; ++k)
             cycle.AddFrame(totalFrames[k]);
 
-        m_animationSet.emplace(cycleName, cycle);
+        m_animations.emplace(cycleName, cycle);
     }
 
 
     // All sprite meta data has a default animation frame
-    m_currentFrame = m_animationSet["default"].GetCurrentFrame();
+    m_currentFrame = m_animations["default"].GetCurrentFrame();
 }
 
 
@@ -104,7 +104,7 @@ const SDL_Rect& Sprite::GetSourceRect() const
 
 
 
-SDL_Texture* Sprite::GetTexture() const
+const SDL_Texture* Sprite::GetTexture() const
 {
     return m_texture;
 }
@@ -141,21 +141,21 @@ float Sprite::GetScrollFactor() const
 
 void Sprite::SetAlphaMod(uint8_t alpha)
 {
-    SDL_SetTextureAlphaMod(m_texture, alpha);
+    SDL_SetTextureAlphaMod( const_cast<SDL_Texture*>(m_texture), alpha );
 }
 
 
 
 void Sprite::PlayAnimation(std::string_view name)
 {
-    if ( m_animationSet.count(name.data()) == 0 )
+    if ( m_animations.count(name.data()) == 0 )
     {
         GAME_2D_LOG_ERROR("Could not display \'%s\' animation.\n\n", name.data());
         return;
     }
 
 
-    Animation& cycle = m_animationSet[ name.data() ];
+    Animation& cycle = m_animations[ name.data() ];
 
     cycle.StepTime();
 

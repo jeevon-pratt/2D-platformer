@@ -1,8 +1,6 @@
 #pragma once
 
 #include <box2d/b2_body.h>      // b2Vec2 class
-#include <json/json.h>          // Json:::Value
-
 #include <string>               // std::string
 #include <string_view>          // std::string_view
 #include <unordered_map>        // std::unordered_map
@@ -12,16 +10,21 @@
 struct SDL_Texture;
 struct SDL_Rect;
 
+namespace Json
+{
+    class Value;
+}
+
 
 /**
  *  Structure for creating sprites
  */
 struct SpriteCreateInfo
 {
-    SDL_Texture* texture        = nullptr;  // The texture of the sprite
-    std::string  dataFilePath   = "";       // The file path for the animation meta data
-    bool         useScreenCoord = false;    // Default coordinate type is screen coordinates
-    float        scrollFactor   = 1.0f;     // Sprite scroll factor for parallax scrolling
+    const SDL_Texture* texture        = nullptr;  // The texture of the sprite
+    std::string        dataFilePath   = "";       // The file path for the animation meta data
+    bool               useScreenCoord = false;    // Default coordinate type is screen coordinates
+    float              scrollFactor   = 1.0f;     // Sprite scroll factor for parallax scrolling
 };
 
 
@@ -49,7 +52,7 @@ public:
     const SDL_Rect& GetSourceRect() const;
 
     // Returns texture of the sprite
-    SDL_Texture* GetTexture() const;
+    const SDL_Texture* GetTexture() const;
 
     // Returns sprite frame width in pixels
     uint16_t GetFrameWidth() const;
@@ -78,7 +81,7 @@ private:
     //
     //       2) The destruction of the sprite texture is handled by the RenderWindow
     //          instance that loaded the texture.
-    SDL_Texture* m_texture;
+    const SDL_Texture* m_texture;
 
     // The current animation frame of the sprite
     //
@@ -90,7 +93,7 @@ private:
     //
     // Note: This animation set can only be populated by calling the 'LoadAnimations'
     //       method on the JSON file containing the sprite's meta data.
-    std::unordered_map<std::string, Animation> m_animationSet;
+    std::unordered_map<std::string, Animation> m_animations;
 
     // Boolean that determines if the sprite uses world coordinates
     //

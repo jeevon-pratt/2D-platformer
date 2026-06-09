@@ -76,16 +76,16 @@ Json::Value LoadJson(std::string_view filepath)
     static std::ifstream s_file;
     Json::CharReaderBuilder builder;
     Json::Value root;
-    Json::String errs;
+    Json::String error;
 
     builder["collectComments"] = false;
 
-    s_file.open( filepath.data() );
+    s_file.open(filepath.data());
 
 
-    if ( !Json::parseFromStream(builder, s_file, &root, &errs) )
+    if ( !Json::parseFromStream(builder, s_file, &root, &error) )
     {
-        GAME_2D_LOG_ERROR("Couldn't open %s\n%s\n\n", filepath.data(), errs.c_str());
+        GAME_2D_LOG_ERROR("Couldn't open %s\n%s\n\n", filepath.data(), error.c_str());
         s_file.clear();
     }
 
@@ -102,7 +102,7 @@ void OverWriteJson(std::string_view filepath, Json::Value& root)
     static std::ofstream s_fileOut;
 
     // To clear the save file before writing new data
-    s_fileOut.open( filepath.data(), std::ios::trunc );
+    s_fileOut.open(filepath.data(), std::ios::trunc);
 
 
      if ( !s_fileOut.is_open() )

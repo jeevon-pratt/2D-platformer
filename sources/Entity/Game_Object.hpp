@@ -1,10 +1,18 @@
 #pragma once
 
-#include <box2d/b2_math.h>      // b2Vec2 class
+#include <box2d/b2_math.h>         // b2Vec2 class
 
-#include "Media/Sprite.hpp"     // SpriteCreateInfo struct, Sprite class
+#include "Media/Sprite.hpp"        // Sprite class
 
 struct SDL_Texture;
+class  b2World;
+class  TextureManager;
+
+namespace Json
+{
+    class Value;
+}
+
 
 
 /**
@@ -34,13 +42,10 @@ public:
     void operator=(const GameObject& object);
 
     // Creates the sprite of the game object
-    virtual void CreateSprite(const SpriteCreateInfo& info);
+    virtual void CreateSprite(const TextureManager& manager, const Json::Value& sprite);
 
-    // Creates the physics body in the physics world
-    virtual void CreateBody(b2World& world, b2BodyDef& definition);
-
-    // Creates the main fixture for the body
-    virtual void CreateMainFixture(b2FixtureDef& definition);
+    // Creates the physics body and main fixture of the game object
+    virtual void CreateHitBox(b2World& world, const Json::Value& object);
 
     // Returns a reference to the game object sprite
     virtual Sprite& GetSprite();
@@ -59,6 +64,15 @@ public:
 
     // Returns the initial position of the object
     virtual b2Vec2 GetSpawnPoint() const;
+
+    // Sets the angle of the physics body
+    virtual void SetAngle(float angle);
+
+    // Sets the spawn point of the physics body
+    virtual void SetSpawnPoint(b2Vec2 pos);
+
+    // Sets the position of the physics body
+    virtual void SetPosition(b2Vec2 newPos);
 
     // Sets the transform of the physics body
     virtual void SetTransform(b2Vec2 newPos, float angle);

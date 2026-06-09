@@ -7,6 +7,14 @@
 #include "Media/Sprite.hpp"                         // SpriteCreateInfo struct
 #include "Player_State/Player_State_Manager.hpp"    // PlayerStateManager class
 
+class b2World;
+
+namespace Json
+{
+    class Value;
+}
+
+
 
 /**
  *  Class for representing player
@@ -43,8 +51,8 @@ public:
     //       to create deep copies of these physics attributes.
     void operator=(const Player& player);
 
-    // Creates the foot sensor fixture for player jumping
-    void CreateGroundSensor(b2FixtureDef& definition);
+    // Creates the physics body, main fixture, and sensor of the player
+    virtual void CreateHitBox(b2World& world, const Json::Value& player) override;
 
     // Returns the player's health
     float GetHealth() const;

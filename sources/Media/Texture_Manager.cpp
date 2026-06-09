@@ -26,7 +26,7 @@ TextureManager::TextureManager(const Renderer& renderer):
 
 
 
-void TextureManager::LoadTexture(std::string_view filepath)
+void TextureManager::LoadTexture(std::string_view name, std::string_view filepath)
 {
     GAME_2D_LOG_DEBUG("Loading texture: %s\n\n", filepath.data());
 
@@ -39,29 +39,29 @@ void TextureManager::LoadTexture(std::string_view filepath)
         return;
     }
 
-    m_textures.emplace(filepath.data(), texture);
+    m_textures.emplace(name.data(), texture);
 }
 
 
 
-SDL_Texture* TextureManager::Get(std::string_view filepath)
+const SDL_Texture* TextureManager::Get(std::string_view name) const
 {
-    if ( m_textures.count(filepath.data()) == 0 )
+    if ( m_textures.count(name.data()) == 0 )
     {
-        GAME_2D_LOG_ERROR("Could not find %s.\n\n", filepath.data());
+        GAME_2D_LOG_ERROR("Could not find texture %s\n\n", name.data());
         return nullptr;
     }
 
-    return m_textures[ filepath.data() ];
+    return m_textures.at( name.data() );
 }
 
 
 
 TextureManager::~TextureManager()
 {
-    for (auto& [filepath, texture] : m_textures)
+    for (auto& [name, texture] : m_textures)
     {
-        GAME_2D_LOG_DEBUG("Destroying texture: %s\n\n", filepath.data());
-        SDL_DestroyTexture(texture);
+        GAME_2D_LOG_DEBUG("Destroying texture: %s\n\n", name.data());
+        SDL_DestroyTexture( const_cast<SDL_Texture*>(texture) );
     }
 }

@@ -1,5 +1,7 @@
 #include <SDL2/SDL_ttf.h>   // SDL_ttf functionality
 
+#include <string>           // std::string, std::to_string
+
 #include "Media/Text.hpp"   // FontManager class
 #include "Utility/Log.hpp"  // GAME_2D_LOG_DEBUG and GAME_2D_LOG_ERROR macro functions
 
@@ -8,12 +10,13 @@
 // IMPLEMENTATION
 // **************
 
-void FontManager::LoadFont(std::string_view filepath, uint8_t ptSize)
+void FontManager::LoadFont(std::string_view name, std::string_view filepath, uint8_t size)
 {
-    GAME_2D_LOG_DEBUG("Loading font: %s (point size %d)\n\n", filepath.data(), ptSize);
+    GAME_2D_LOG_DEBUG("Loading font: %s (point size: %d)\n\n", filepath.data(), size);
 
-
-    TTF_Font* font = TTF_OpenFont(filepath.data(), ptSize);
+     // The font size is incorporated into the hash table key
+    std::string key  = std::string(name) + "_" + std::to_string(size);
+    TTF_Font*   font = TTF_OpenFont(filepath.data(), size);
 
     if (!font)
     {
@@ -21,37 +24,30 @@ void FontManager::LoadFont(std::string_view filepath, uint8_t ptSize)
         return;
     }
 
-
-    auto key = std::make_pair(filepath.data(), ptSize);
-
     m_fonts.emplace(key, font);
 }
 
 
 
-_TTF_Font* FontManager::Get(std::string_view filepath, uint8_t ptSize)
+const TTF_Font* FontManager::Get(std::string_view name) const
 {
-    auto key = std::make_pair(filepath.data(), ptSize);
-
-    if ( m_fonts.count(key) == 0 )
+    if ( m_fonts.count(name.data()) == 0 )
     {
-        GAME_2D_LOG_ERROR("Could not find font %s (point size: %u).\n\n", filepath.data(), ptSize);
+        GAME_2D_LOG_ERROR("Could not find font %s\n\n", name.data());
         return nullptr;
     }
 
-    return m_fonts[key];
+    return m_fonts.at( name.data() );
 }
+
 
 
 
 FontManager::~FontManager()
 {
-    for (auto& [key, font] : m_fonts)
+    for (auto& [name, font] : m_fonts)
     {
-        [[maybe_unused]] const auto& [filepath, ptSize] = key;
-
-        GAME_2D_LOG_DEBUG("Destroying font: %s (point size %d)\n\n", filepath.data(), ptSize);
-
-        TTF_CloseFont(font);
+        GAME_2D_LOG_DEBUG("Destroying font: %s\n\n", name.data());
+        TTF_CloseFont( const_cast<TTF_Font*>(font) );
     }
 }

@@ -2,9 +2,9 @@
 
 #include <SDL2/SDL_pixels.h>    // SDL_Color struct
 
-#include <map>                  // std::map
 #include <string>               // std::string
 #include <string_view>          // std::string_view
+#include <unordered_map>        // std::unordered_map
 
 struct _TTF_Font;               // typedef struct _TTF_Font TTF_Font
 
@@ -14,10 +14,11 @@ struct _TTF_Font;               // typedef struct _TTF_Font TTF_Font
  */
 struct Text
 {
-    std::string str   = "";             // The text characters
-    _TTF_Font*  font  = nullptr;        // Pointer to text font data
-    SDL_Color   color = { 0, 0, 0 };    // The text color
+    std::string      str   = "";             // The text characters
+    const _TTF_Font* font  = nullptr;        // Pointer to text font data
+    SDL_Color        color = { 0, 0, 0 };    // The text color
 };
+
 
 
 
@@ -34,10 +35,10 @@ public:
     FontManager() = default;
 
     // Loads fonts with the specified .ttf file path and point size
-    void LoadFont(std::string_view filepath, uint8_t ptSize);
+    void LoadFont(std::string_view name, std::string_view filepath, uint8_t size);
 
-    // Returns the font with the specified file path and point size
-    _TTF_Font* Get(std::string_view filepath, uint8_t ptSize);
+    // Returns the font with the specified name and point size
+    const _TTF_Font* Get(std::string_view name) const;
 
     // Frees all font data loaded by the manager
     ~FontManager();
@@ -52,13 +53,10 @@ private:
     void operator=(const FontManager& manager) = delete;
 
 private:
-    // Key for loaded font data which represents the file path and font point size
-    using FontKey = std::pair<std::string, uint8_t>;
-
-    // Data struture that maps all the loaded TTF font data to its file path and
+    // Hash table that maps all the loaded TTF font data to a string name and
     // font point size
     //
     // Note: The destructor automatically destroys all loaded textures. This is not
     //       handled by the main game class.
-    std::map<FontKey, _TTF_Font*> m_fonts;
+    std::unordered_map<std::string, const _TTF_Font*> m_fonts;
 };

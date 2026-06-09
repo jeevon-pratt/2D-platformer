@@ -1,7 +1,7 @@
 #include "Core/Game_2D.hpp"                     // Game2D class
 #include "Game_State/Game_State.hpp"            // Game state classes and enum
 #include "Game_State/Game_State_Manager.hpp"    // GameStateManager class
-#include "Utility/Assert.hpp"                   // GAME_2D_ASSERT macro function
+#include "Utility/Assert.hpp"                   // GAME_2D_ASSERT_MSG macro function
 
 
 // **************
@@ -63,6 +63,8 @@ void GameStateManager::PushState(GAME_STATE_TYPE newState)
 
 void GameStateManager::PopState()
 {
+    GAME_2D_ASSERT_MSG(!m_stack.empty(), "Game state stack is empty.");
+
     m_stack.pop();
 }
 
@@ -70,7 +72,7 @@ void GameStateManager::PopState()
 
 void GameStateManager::HandleEvents()
 {
-    GAME_2D_ASSERT(m_gameData);
+    GAME_2D_ASSERT_MSG(m_gameData, "Game state manager is not properly initialized.");
 
     m_stateTable.at(m_currentState)
         ->OnHandle(*m_gameData);
@@ -80,7 +82,7 @@ void GameStateManager::HandleEvents()
 
 void GameStateManager::Update()
 {
-    GAME_2D_ASSERT(m_gameData);
+    GAME_2D_ASSERT_MSG(m_gameData, "Game state manager is not properly initialized.");
 
     if (m_currentState != m_stack.top())
     {
@@ -103,7 +105,7 @@ void GameStateManager::Update()
 
 void GameStateManager::Render()
 {
-    GAME_2D_ASSERT(m_gameData);
+    GAME_2D_ASSERT_MSG(m_gameData, "Game state manager is not properly initialized.");
 
     m_stateTable.at(m_currentState)
         ->OnRender(*m_gameData);

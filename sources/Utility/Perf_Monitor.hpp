@@ -22,7 +22,7 @@ public:
     void SetInterval(uint32_t intervalTime);
 
     // Sets the font of the frame time and frame rate text
-    void SetTextFont(_TTF_Font* font);
+    void SetTextFont(const _TTF_Font* font);
 
     // Sets the color of the frame time and frame rate text
     void SetTextColor(SDL_Color color);

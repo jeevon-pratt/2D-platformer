@@ -74,7 +74,7 @@ void Level1State::OnUpdate(Game2D& app)
 
 
     if (playerState == HIT_GROUND_STATE)
-        app.m_audioManager.PlayAudio("../../assets/audio/hit_ground.wav");
+        app.m_audioManager.PlayAudio("hit_ground");
 
     if (playerPos.y > -200.0f)
         app.m_camera.Update(playerPos, winWidth, winHeight);
@@ -127,7 +127,7 @@ void Level1State::OnUpdate(Game2D& app)
     {
         std::cout << "You have died :(\n";
 
-        app.m_audioManager.PlayAudio("../../assets/audio/videogame-death-sound.wav");
+        app.m_audioManager.PlayAudio("death_sound");
 
         app.m_player.Respawn();
 
@@ -138,7 +138,7 @@ void Level1State::OnUpdate(Game2D& app)
             enemy.Respawn();
     }
 
-    // app.m_audioManager.PlayAudio("../../assets/audio/8_bit_music.wav");
+    app.m_audioManager.PlayAudio("8_bit_music");
 }
 
 
@@ -183,7 +183,7 @@ void Level1State::OnRender(Game2D& app)
 
 void Level1State::OnExit(Game2D& app)
 {
-    app.m_audioManager.PauseAudio("../../assets/audio/8_bit_music.wav");
+    app.m_audioManager.PauseAudio("8_bit_music");
 
     SaveFileData data;
     data.level        = LEVEL_1_STATE;

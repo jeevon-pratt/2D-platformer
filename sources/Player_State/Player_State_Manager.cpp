@@ -1,7 +1,7 @@
 #include "Entity/Player.hpp"                        // Player class
-#include "Player_State/Player_State.hpp"            // Player state and PlayerStateManager classes and State enums
+#include "Player_State/Player_State.hpp"            // Player state, PlayerStateManager classes and State enums
 #include "Player_State/Player_State_Manager.hpp"    // PlayerStateManager class
-#include "Utility/Assert.hpp"                       // GAME_2D_ASSERT macro function
+#include "Utility/Assert.hpp"                       // GAME_2D_ASSERT_MSG macro function
 
 
 // **************
@@ -56,6 +56,8 @@ void PlayerStateManager::PushState(PLAYER_STATE_TYPE newState)
 
 void PlayerStateManager::PopState()
 {
+    GAME_2D_ASSERT_MSG(!m_stack.empty(), "Player state stack is empty.");
+    
     m_stack.pop();
 }
 
@@ -63,7 +65,7 @@ void PlayerStateManager::PopState()
 
 void PlayerStateManager::HandleInput()
 {
-    GAME_2D_ASSERT(m_playerData);
+    GAME_2D_ASSERT_MSG(m_playerData, "Player state manager is not properly initialized.");
 
     m_stateTable.at(m_currentState)
         ->OnHandle(*m_playerData);
@@ -73,7 +75,7 @@ void PlayerStateManager::HandleInput()
 
 void PlayerStateManager::Update()
 {
-    GAME_2D_ASSERT(m_playerData);
+    GAME_2D_ASSERT_MSG(m_playerData, "Player state manager is not properly initialized.");
 
     if (m_currentState != m_stack.top())
     {

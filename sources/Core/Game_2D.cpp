@@ -1,8 +1,8 @@
 #include <box2d/box2d.h>            // Box2D functionality
-#include <json/json.h>              // Jsoncpp functionality
 #include <SDL2/SDL.h>               // SDL functionality
 #include <SDL2/SDL_image.h>         // IMG_GetError and IMG_Quit functions
 #include <SDL2/SDL_ttf.h>           // TTF_Init and TTF_Quit functions, TTF_Font struct
+#include <json/value.h>             // Json::Value class
 
 #include <array>                    // std::array
 #include <cmath>                    // M_PI constant
@@ -11,7 +11,6 @@
     #include <filesystem>           // std::filesystem
 #endif
 
-#include <fstream>                  // std::ifstream
 #include <iostream>                 // std::cerr
 #include <string>                   // std::string
 
@@ -35,9 +34,10 @@
     static constexpr const char* BINARY_DIR = "../../../bin/release";
 #endif
 
-static constexpr const char* ASSET_FILE_PATH = "../../internal/assets.json";
-static constexpr const char* LOG_FILE_PATH   = "../../internal/log.txt";
-static constexpr const char* SAVE_FILE_PATH  = "../../internal/save.json";
+static constexpr const char* ASSET_CONFIG_FILE_PATH  = "../../internal/asset_config.json";
+static constexpr const char* OBJECT_CONFIG_FILE_PATH = "../../internal/object_config.json";
+static constexpr const char* LOG_FILE_PATH           = "../../internal/log.txt";
+static constexpr const char* SAVE_FILE_PATH          = "../../internal/save.json";
 
 
 // Initialization Flags
@@ -69,16 +69,16 @@ Game2D::Game2D():
     m_textureManager (m_renderer),
     m_physicsWorld   (std::make_unique<b2World>(G_ACCELERATION))
 {
+    m_objects.reserve(MAX_OBJECTS);
+    m_enemies.reserve(MAX_ENEMIES);
+
     LoadAssets();
 
     CreateMainMenu();
     CreateSettingsMenu();
     CreatePauseMenu();
     // CreateLevelUI();
-
-    CreatePlayer();
     CreateObjects();
-    CreateEnemies();
     CreateLayers();
 
     m_stateManager.LinkToGame(*this);
@@ -181,23 +181,43 @@ void Game2D::RunInternal()
 
 void Game2D::LoadAssets()
 {
-    Json::Value root = LoadJson(ASSET_FILE_PATH);
+    Json::Value assets = LoadJson(ASSET_CONFIG_FILE_PATH);
 
-
-    // Loading Textures
-    for (const Json::Value& filepath : root["textures"])
-        m_textureManager.LoadTexture(filepath.asCString());
 
     // Loading Audio
-    for (const Json::Value& filepath : root["audio"])
-        m_audioManager.LoadAudio(filepath.asCString());
+    // =============
+
+    for (const Json::Value& audio : assets["audio"])
+    {
+        const char* name = audio["name"].asCString();
+        const char* path = audio["path"].asCString();
+
+        m_audioManager.LoadAudio(name, path);
+    }
 
 
     // Loading Fonts
-    for (const Json::Value& fontSize : root["font_sizes"])
+    // =============
+
+    for (const Json::Value& font : assets["fonts"])
     {
-        for (const Json::Value& filepath : root["fonts"])
-            m_fontManager.LoadFont(filepath.asCString(), fontSize.asUInt());
+        const char* name = font["name"].asCString();
+            const char* path = font["path"].asCString();
+            
+        for (const Json::Value& size : assets["font_sizes"])
+            m_fontManager.LoadFont(name, path, size.asUInt());
+    }
+
+
+    // Loading Textures
+    // ================
+
+    for (const Json::Value& texture : assets["textures"])
+    {
+        const char* name = texture["name"].asCString();
+        const char* path = texture["path"].asCString();
+
+        m_textureManager.LoadTexture(name, path);
     }
 }
 
@@ -209,7 +229,7 @@ void Game2D::CreateMainMenu()
     // ======================
 
     SpriteCreateInfo menuInfo;
-    menuInfo.texture        = m_textureManager.Get("../../assets/gfx/menu_background.png");
+    menuInfo.texture        = m_textureManager.Get("menu_background");
     menuInfo.dataFilePath   = "../../assets/dev/menu_background.json";
     menuInfo.useScreenCoord = true;
 
@@ -220,7 +240,7 @@ void Game2D::CreateMainMenu()
     // ==================
 
     SpriteCreateInfo buttonInfo;
-    buttonInfo.texture        = m_textureManager.Get("../../assets/gfx/mother_tick-Sheet.png");
+    buttonInfo.texture        = m_textureManager.Get("mother_tick");
     buttonInfo.dataFilePath   = "../../assets/dev/mother_tick.json";
     buttonInfo.useScreenCoord = true;
 
@@ -236,7 +256,7 @@ void Game2D::CreateMainMenu()
     // // Create settings button
     // // ======================
 
-    // buttonInfo.texture         = m_textureManager.Get("../../assets/gfx/mother_tick-Sheet.png");
+    // buttonInfo.texture         = m_textureManager.Get("mother_tick");
     // buttonInfo.dataFilePath    = "../../assets/dev/mother_tick.json";
     // buttonInfo.useScreenCoord = true;
 
@@ -250,7 +270,7 @@ void Game2D::CreateMainMenu()
     // // Create quit button
     // // ==================
 
-    // buttonInfo.texture         = m_textureManager.Get("../../assets/gfx/mother_tick-Sheet.png");
+    // buttonInfo.texture         = m_textureManager.Get("mother_tick");
     // buttonInfo.dataFilePath    = "../../assets/dev/mother_tick.json";
     // buttonInfo.useScreenCoord = true;
 
@@ -269,7 +289,7 @@ void Game2D::CreateSettingsMenu()
     // ======================
 
     SpriteCreateInfo menuInfo;
-    menuInfo.texture        = m_textureManager.Get("../../assets/gfx/menu_background.png");
+    menuInfo.texture        = m_textureManager.Get("menu_background");
     menuInfo.dataFilePath   = "../../assets/dev/menu_background.json";
     menuInfo.useScreenCoord = true;
 
@@ -280,7 +300,7 @@ void Game2D::CreateSettingsMenu()
     // ==================
 
     SpriteCreateInfo buttonInfo;
-    buttonInfo.texture        = m_textureManager.Get("../../assets/gfx/mother_tick-Sheet.png");
+    buttonInfo.texture        = m_textureManager.Get("mother_tick");
     buttonInfo.dataFilePath   = "../../assets/dev/mother_tick.json";
     buttonInfo.useScreenCoord = true;
 
@@ -301,7 +321,7 @@ void Game2D::CreatePauseMenu()
     // ======================
 
     SpriteCreateInfo menuInfo;
-    menuInfo.texture        = m_textureManager.Get("../../assets/gfx/menu_background.png");
+    menuInfo.texture        = m_textureManager.Get("menu_background");
     menuInfo.dataFilePath   = "../../assets/dev/menu_background.json";
     menuInfo.useScreenCoord = true;
 
@@ -312,7 +332,7 @@ void Game2D::CreatePauseMenu()
     // ====================
 
     SpriteCreateInfo buttonInfo;
-    buttonInfo.texture        = m_textureManager.Get("../../assets/gfx/mother_tick-Sheet.png");
+    buttonInfo.texture        = m_textureManager.Get("mother_tick");
     buttonInfo.dataFilePath   = "../../assets/dev/mother_tick.json";
     buttonInfo.useScreenCoord = true;
 
@@ -328,7 +348,7 @@ void Game2D::CreatePauseMenu()
     // Create main menu button
     // =======================
 
-    buttonInfo.texture        = m_textureManager.Get("../../assets/gfx/mother_tick-Sheet.png");
+    buttonInfo.texture        = m_textureManager.Get("mother_tick");
     buttonInfo.dataFilePath   = "../../assets/dev/mother_tick.json";
     buttonInfo.useScreenCoord = true;
 
@@ -342,7 +362,7 @@ void Game2D::CreatePauseMenu()
     // Create settings button
     // ======================
 
-    buttonInfo.texture        = m_textureManager.Get("../../assets/gfx/mother_tick-Sheet.png");
+    buttonInfo.texture        = m_textureManager.Get("mother_tick");
     buttonInfo.dataFilePath   = "../../assets/dev/mother_tick.json";
     buttonInfo.useScreenCoord = true;
 
@@ -356,7 +376,7 @@ void Game2D::CreatePauseMenu()
     // Create quit button
     // ==================
 
-    buttonInfo.texture        = m_textureManager.Get("../../assets/gfx/mother_tick-Sheet.png");
+    buttonInfo.texture        = m_textureManager.Get("mother_tick");
     buttonInfo.dataFilePath   = "../../assets/dev/mother_tick.json";
     buttonInfo.useScreenCoord = true;
 
@@ -375,7 +395,7 @@ void Game2D::CreateLevelUI()
     // ===================
 
     SpriteCreateInfo buttonInfo;
-    buttonInfo.texture        = m_textureManager.Get("../../assets/gfx/mother_tick-Sheet.png");
+    buttonInfo.texture        = m_textureManager.Get("mother_tick");
     buttonInfo.dataFilePath   = "../../assets/dev/mother_tick.json";
     buttonInfo.useScreenCoord = true;
 
@@ -390,300 +410,87 @@ void Game2D::CreateLevelUI()
 
 
 
-void Game2D::CreatePlayer()
-{
-    // Create Player
-    // =============
-
-    // Create player sprite
-    SpriteCreateInfo playerInfo;
-    playerInfo.texture        = m_textureManager.Get("../../assets/gfx/mother_tick-Sheet.png");
-    playerInfo.dataFilePath   = "../../assets/dev/mother_tick.json";
-    playerInfo.useScreenCoord = false;
-
-    m_player.CreateSprite(playerInfo);
-
-
-    // Create player physics body
-    b2BodyDef playerBodyDef;
-    playerBodyDef.type          = b2_dynamicBody;
-    playerBodyDef.position      = b2Vec2(0.7f, 16.0f);
-    playerBodyDef.fixedRotation = true;
-
-    m_player.CreateBody(*m_physicsWorld, playerBodyDef);
-
-
-    // Create player shape
-    b2PolygonShape playerBox;
-    float width = ConvertToMeters( m_player.GetSprite().GetFrameWidth() );
-    float height = ConvertToMeters( m_player.GetSprite().GetFrameHeight() );
-
-    playerBox.SetAsBox(width / 2.0f, height / 2.0f);
-
-
-    // Create player fixture
-    b2FixtureDef fixtureDef;
-    fixtureDef.shape    = &playerBox;
-    fixtureDef.density  = 5.0f;
-    fixtureDef.friction = 1000.0f;
-
-    m_player.CreateMainFixture(fixtureDef);
-
-
-    // Create player foot sensor
-    b2EdgeShape sensorShape;
-    b2Vec2 vertex1 = b2Vec2(-width / 2.0f, -height / 2.0f);
-    b2Vec2 vertex2 = b2Vec2( width / 2.0f, -height / 2.0f);
-
-    sensorShape.SetTwoSided(vertex1, vertex2);
-
-    b2FixtureDef sensorDef;
-    sensorDef.shape    = &sensorShape;
-    sensorDef.density  = 1.0f;
-    sensorDef.isSensor = true;
-    sensorDef.friction = 1000.0f;
-
-    m_player.CreateGroundSensor(sensorDef);
-
-
-    // Set up player-ground collision system
-    m_contactListener.LinkToPlayer(m_player);
-    m_physicsWorld->SetContactListener(&m_contactListener);
-}
-
-
-
 void Game2D::CreateObjects()
 {
-    m_objects.reserve(MAX_OBJECTS);
+    Json::Value object = LoadJson(OBJECT_CONFIG_FILE_PATH);
+
+
+    // Player
+    // ======
+
+    m_player.CreateSprite(m_textureManager, object["player"]);
+    m_player.CreateHitBox(*m_physicsWorld, object["player"]);
+    m_player.SetSpawnPoint( b2Vec2(0.7f, 16.0f) );
+    m_player.SetPosition( b2Vec2(0.7f, 16.0f) );
+
+    m_contactListener.LinkToPlayer(m_player);
+    m_physicsWorld->SetContactListener(&m_contactListener);
 
 
     // Kinematic Wood Block
     // ====================
 
     m_objects.emplace_back();
-
-
-    // Create wood block sprite
-    SpriteCreateInfo woodInfo;
-    woodInfo.texture        = m_textureManager.Get("../../assets/gfx/wood_block.png");
-    woodInfo.dataFilePath   = "../../assets/dev/wood_block.json";
-    woodInfo.useScreenCoord = false;
-
-    m_objects[0].CreateSprite(woodInfo);
-
-
-    // Create wood block physics body
-    b2BodyDef woodBodyDef;
-    woodBodyDef.type          = b2_kinematicBody;
-    woodBodyDef.angle         = static_cast<float>(M_PI) / 2.0f;
-    woodBodyDef.position      = b2Vec2(-20.0f, 3.5f);
-    woodBodyDef.fixedRotation = true;
-
-    m_objects[0].CreateBody(*m_physicsWorld, woodBodyDef);
-
-
-    // Create wood block shape
-    b2PolygonShape woodBox;
-    float woodWidth = ConvertToMeters( m_objects[0].GetSprite().GetFrameWidth() );
-    float woodHeight = ConvertToMeters( m_objects[0].GetSprite().GetFrameHeight() );
-
-    woodBox.SetAsBox(woodWidth / 2.0f, woodHeight / 2.0f);
-
-
-    // Create wood block fixture
-    b2FixtureDef woodFixtureDef;
-    woodFixtureDef.shape = &woodBox;
-
-    m_objects[0].CreateMainFixture(woodFixtureDef);
-
+    m_objects.back().CreateSprite(m_textureManager, object["wood_platform"]);
+    m_objects.back().CreateHitBox(*m_physicsWorld, object["wood_platform"]);
+    m_objects.back().SetSpawnPoint( b2Vec2(-20.0f, 3.5f) );
+    m_objects.back().SetPosition( b2Vec2(-20.0f, 3.5f) );
+    m_objects.back().SetAngle( static_cast<double>(M_PI / 2.0f) );
 
 
     // Dynamic Soccer Ball
     // ===================
 
     m_objects.emplace_back();
+    m_objects.back().CreateSprite(m_textureManager, object["soccer_ball"]);
+    m_objects.back().CreateHitBox(*m_physicsWorld, object["soccer_ball"]);
+    m_objects.back().SetSpawnPoint( b2Vec2(0.8f, 20.0f) );
+    m_objects.back().SetPosition( b2Vec2(0.8f, 20.0f) );
 
 
-    // Create soccer ball sprite
-    SpriteCreateInfo ballInfo;
-    ballInfo.texture        = m_textureManager.Get("../../assets/gfx/soccer_ball.png");
-    ballInfo.dataFilePath   = "../../assets/dev/soccer_ball.json";
-    ballInfo.useScreenCoord = false;
-
-    m_objects[1].CreateSprite(ballInfo);
-
-
-
-    // Create soccer ball physics body
-    b2BodyDef ballBodyDef;
-    ballBodyDef.type          = b2_dynamicBody;
-    ballBodyDef.position      = b2Vec2(0.8f, 20.0f);
-    ballBodyDef.fixedRotation = false;
-
-    m_objects[1].CreateBody(*m_physicsWorld, ballBodyDef);
-
-
-    // Create soccer ball shape
-    b2CircleShape ballShape;
-
-    float ballDiameter = ConvertToMeters( m_objects[1].GetSprite().GetFrameWidth() );
-    ballShape.m_radius = ballDiameter / 2.0f;
-
-
-    // Create soccer ball fixture
-    b2FixtureDef ballFixtureDef;
-    ballFixtureDef.shape       = &ballShape;
-    ballFixtureDef.density     = 1.0f;
-    ballFixtureDef.friction    = 0.7f;
-    ballFixtureDef.restitution = 0.7f;
-
-    m_objects[1].CreateMainFixture(ballFixtureDef);
-
-
-
-    // Dynamic Grass Block
-    // ===================
+     // Dynamic Grass Block
+    // ====================
 
     m_objects.emplace_back();
+    m_objects.back().CreateSprite(m_textureManager, object["grass_block"]);
+    m_objects.back().CreateHitBox(*m_physicsWorld, object["grass_block"]);
+    m_objects.back().SetSpawnPoint( b2Vec2(0.7f, 25.0f) );
+    m_objects.back().SetPosition( b2Vec2(0.7f, 25.0f) );
 
 
-    // Create grass block sprite
-    SpriteCreateInfo grassInfo;
-    grassInfo.texture        = m_textureManager.Get("../../assets/gfx/grass_block.png");
-    grassInfo.dataFilePath   = "../../assets/dev/grass_block.json";
-    grassInfo.useScreenCoord = false;
-
-    m_objects[2].CreateSprite(grassInfo);
-
-
-    // Create grass block physics body
-    b2BodyDef grassBodyDef;
-    grassBodyDef.type          = b2_dynamicBody;
-    grassBodyDef.position      = b2Vec2(0.7f, 25.0f);
-    grassBodyDef.fixedRotation = false;
-
-    m_objects[2].CreateBody(*m_physicsWorld, grassBodyDef);
-
-
-    // Create grass block shape
-    b2PolygonShape grassShape;
-    float grassWidth = ConvertToMeters( m_objects[2].GetSprite().GetFrameWidth() );
-    float grassHeight = ConvertToMeters( m_objects[2].GetSprite().GetFrameHeight() );
-
-    grassShape.SetAsBox(grassWidth / 2.0f, grassHeight / 2.0f);
-
-
-    // Create grass block fixture
-    b2FixtureDef grassFixtureDef;
-    grassFixtureDef.shape       = &grassShape;
-    grassFixtureDef.density     = 2.0f;
-    grassFixtureDef.friction    = 1000.0f;
-    grassFixtureDef.restitution = 0.05f;
-
-    m_objects[2].CreateMainFixture(grassFixtureDef);
-
-
-
-    // Create Static Ground Objects
-    // ============================
+    // Static Ground Objects
+    // =====================
 
     b2Vec2 pos = b2Vec2(0.0f, 0.0f);
 
-    for (uint64_t i = 3; i < MAX_OBJECTS; ++i)
+    for (uint64_t i = 0; i < MAX_OBJECTS - 3; ++i)
     {
         m_objects.emplace_back();
+        m_objects.back().CreateSprite(m_textureManager, object["ground"]);
+        m_objects.back().CreateHitBox(*m_physicsWorld, object["ground"]);
+        m_objects.back().SetSpawnPoint(pos);
+        m_objects.back().SetPosition(pos);
 
-
-        // Create ground sprites
-        SpriteCreateInfo groundInfo;
-        groundInfo.texture        = m_textureManager.Get("../../assets/gfx/ground.png");
-        groundInfo.dataFilePath   = "../../assets/dev/ground.json";
-        groundInfo.useScreenCoord = false;
-
-        m_objects[i].CreateSprite(groundInfo);
-
-
-        // Create ground physics bodies
-        b2BodyDef groundBodyDef;
-        groundBodyDef.type          = b2_staticBody;
-        groundBodyDef.position      = pos;
-        groundBodyDef.fixedRotation = true;
-
-        m_objects[i].CreateBody(*m_physicsWorld, groundBodyDef);
-
-
-        // Create ground shapes
-        b2PolygonShape groundShape;
-        float groundWidth = ConvertToMeters( m_objects[i].GetSprite().GetFrameWidth() );
-        float groundHeight = ConvertToMeters( m_objects[i].GetSprite().GetFrameHeight() );
-
-        groundShape.SetAsBox(groundWidth / 2.0f, groundHeight / 2.0f);
-
-
-        // Create ground fixtures
-        b2FixtureDef groundFixtureDef;
-        groundFixtureDef.shape = &groundShape;
-
-        m_objects[i].CreateMainFixture(groundFixtureDef);
-
-
-        pos.x += groundWidth;
+        pos.x += 20.0f;
         pos.y -= 0.5f;
     }
-}
 
 
+    // Enemies
+    // =======
 
-void Game2D::CreateEnemies()
-{
-    m_enemies.reserve(MAX_ENEMIES);
+    pos = b2Vec2(100.0f, -7.0f);
 
-
-    b2Vec2 pos = b2Vec2(100.0f, -7.0f);
-
-    for (uint64_t i = 0; i < MAX_ENEMIES; ++i)
+    for (uint64_t i = 0; i < MAX_OBJECTS; ++i)
     {
-        m_enemies.emplace_back();
-
-
-        // Create enemy sprites
-        SpriteCreateInfo enemyInfo;
-        enemyInfo.texture        = m_textureManager.Get("../../assets/gfx/obunga.jpg");
-        enemyInfo.dataFilePath   = "../../assets/dev/obunga.json";
-        enemyInfo.useScreenCoord = false;
-
-        m_enemies[i].CreateSprite(enemyInfo);
-
-
-        // Create enemy physics bodies
-        b2BodyDef enemyBodyDef;
-        enemyBodyDef.type          = b2_dynamicBody;
-        enemyBodyDef.position      = pos;
-        enemyBodyDef.fixedRotation = false;
-
-        m_enemies[i].CreateBody(*m_physicsWorld, enemyBodyDef);
-
-
-        // Create enemy shapes
-        b2PolygonShape enemyShape;
-        float width = ConvertToMeters( m_enemies[i].GetSprite().GetFrameWidth() );
-        float height = ConvertToMeters( m_enemies[i].GetSprite().GetFrameHeight() );
-
-        enemyShape.SetAsBox(width / 2.0f, height / 2.0f);
-
-
-        // Create enemy fixtures
-        b2FixtureDef enemyFixtureDef;
-        enemyFixtureDef.shape    = &enemyShape;
-        enemyFixtureDef.density  = 0.7f;
-        enemyFixtureDef.friction = 1.0f;
-
-        m_enemies[i].CreateMainFixture(enemyFixtureDef);
-
+        m_objects.emplace_back();
+        m_objects.back().CreateSprite(m_textureManager, object["obunga"]);
+        m_objects.back().CreateHitBox(*m_physicsWorld, object["obunga"]);
+        m_objects.back().SetSpawnPoint(pos);
+        m_objects.back().SetPosition(pos);
 
         pos.x += 0.25f;
-        pos.y += width;
+        pos.y += 1.36f;
     }
 }
 
@@ -695,7 +502,7 @@ void Game2D::CreateLayers()
     m_backgroundLayer.reserve(MAX_LAYER_SPRITES);
 
     SpriteCreateInfo deathStarInfo;
-    deathStarInfo.texture        = m_textureManager.Get("../../assets/gfx/death_star.png");
+    deathStarInfo.texture        = m_textureManager.Get("death_star");
     deathStarInfo.dataFilePath   = "../../assets/dev/death_star.json";
     deathStarInfo.useScreenCoord = false;
     deathStarInfo.scrollFactor   = 0.01f;

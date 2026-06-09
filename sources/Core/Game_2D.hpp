@@ -80,14 +80,8 @@ private:
     // Creates the level user interface
     void CreateLevelUI();
 
-    // Creates the player instance and physics body
-    void CreatePlayer();
-
-    // Creates the game object instances and physics bodies
+    // Creates the game object instances
     void CreateObjects();
-
-    // Creates the enemy instances and physics bodies
-    void CreateEnemies();
 
     // Creates the foreground and background layers
     void CreateLayers();

@@ -36,22 +36,22 @@ public:
     AudioManager();
 
     // Loads audio data with the specified file path
-    void LoadAudio(std::string_view filepath);
+    void LoadAudio(std::string_view name, std::string_view filepath);
 
-    // Plays the audio file with the specified file path
+    // Plays the audio file with the specified name
     //
     // Note: 1) This method will continuously play the audio file whether called
     //          inside or outside the game loop.
     //
     //       2) If looping  is not enabled the 'ResetAudio' method would have to be
     //          called in order to replay the audio file from the beginning.
-    void PlayAudio(std::string_view filepath, bool loopEnabled = true);
+    void PlayAudio(std::string_view name, bool loopEnabled = true);
 
-    // Pauses the audio file with the specified filepath
-    void PauseAudio(std::string_view fileapth);
+    // Pauses the audio file with the specified name
+    void PauseAudio(std::string_view name);
 
-    // Used for replaying the audio file with the specified file path
-    void ResetAudio(std::string_view filepath);
+    // Used for replaying the audio file with the specified name
+    void ResetAudio(std::string_view name);
 
     // Closes audio devices and frees all audio data loaded by the manager
     ~AudioManager();
@@ -66,7 +66,7 @@ private:
     void operator=(const AudioManager& manager) = delete;
 
 private:
-    // Hash table that maps all the loaded audio data to its file path
+    // Hash table that maps all the loaded audio data to a string name
     //
     // Note: The destructor automatically destroys all loaded audio data. This is
     //       handled by the main game class.

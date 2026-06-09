@@ -1,5 +1,7 @@
-#include <box2d/b2_body.h>                  // b2Body functionality
+#include <box2d/b2_body.h>                  // b2Body class
+#include <box2d/b2_edge_shape.h>            // b2EdgeShape class
 #include <box2d/b2_world.h>                 // b2World class
+#include <json/value.h>                     // Json::Value class
 
 #include "Entity/Player.hpp"                // Player class
 #include "Player_State/Player_State.hpp"    // PLAYER_STATE_TYPE enum
@@ -56,14 +58,25 @@ void Player::operator=(const Player& player)
 
 
 
-void Player::CreateGroundSensor(b2FixtureDef& definition)
+void Player::CreateHitBox(b2World& world, const Json::Value& player)
 {
-    GAME_2D_ASSERT(m_body);
+    GameObject::CreateHitBox(world, player);
 
-    // To enforce that the fixture is a sensor
-    definition.isSensor = true;
+    float hx = player["width" ].asFloat() / 2.0f;
+    float hy = player["height"].asFloat() / 2.0f;
 
-    m_groundSensor = m_body->CreateFixture(&definition);
+    b2Vec2 vertex1 = b2Vec2(-hx, -hy);
+    b2Vec2 vertex2 = b2Vec2( hx, -hy);
+
+
+    b2EdgeShape shape;
+    shape.SetTwoSided(vertex1, vertex2);
+
+    b2FixtureDef def;
+    def.shape    = &shape;
+    def.isSensor = true;
+
+    m_groundSensor = m_body->CreateFixture(&def);
 }
 
 

@@ -27,7 +27,7 @@ void PerfMonitor::SetInterval(uint32_t intervalTime)
 
 
 
-void PerfMonitor::SetTextFont(_TTF_Font* font)
+void PerfMonitor::SetTextFont(const _TTF_Font* font)
 {
     m_frameRateText.font = font;
     m_frameTimeText.font = font;

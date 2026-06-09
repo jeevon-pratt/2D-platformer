@@ -25,10 +25,10 @@ public:
     TextureManager(const Renderer& renderer);
 
     // Loads textures from the specified file path
-    void LoadTexture(std::string_view filepath);
+    void LoadTexture(std::string_view name, std::string_view filepath);
 
     // Returns the texture with the specified file path
-    SDL_Texture* Get(std::string_view filepath);
+    const SDL_Texture* Get(std::string_view name) const;
 
     // Destroys all texture data that is loaded by the manager
     ~TextureManager();
@@ -49,9 +49,9 @@ private:
     const SDL_Renderer* m_rendererContext;
 
     // Hash table of all the texture data that are loaded by the renderer mapped to
-    // their file paths
+    // a string name
     //
     // Note: The destructor automatically destroys all loaded textures. This is not
     //       handled by any of the entity classes or the main game class.
-    std::unordered_map<std::string, SDL_Texture*> m_textures;
+    std::unordered_map<std::string, const SDL_Texture*> m_textures;
 };
