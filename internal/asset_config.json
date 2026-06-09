@@ -1,0 +1,29 @@
+{
+    "audio": [
+        { "name": "8_bit_music", "path": "../../assets/audio/8_bit_music.wav"               },
+        { "name": "GOWR_Theme",  "path": "../../assets/audio/God-of-War-Ragnarok-Theme.wav" },
+        { "name": "GOW_Theme",   "path": "../../assets/audio/God-of-War-Theme.wav"          },
+        { "name": "hit_ground",  "path": "../../assets/audio/hit_ground.wav"                },
+        { "name": "death_sound", "path": "../../assets/audio/videogame-death-sound.wav"     }
+    ],
+
+    "fonts": [
+        { "name": "cocogoose", "path": "../../assets/fonts/cocogoose.ttf" },
+        { "name": "runescape", "path": "../../assets/fonts/runescape.ttf" }
+    ],
+
+    "font_sizes": [
+        12, 18, 24, 36, 48, 60]
+    ,
+
+    "textures": [
+        { "name": "mother_tick",     "path": "../../assets/gfx/mother_tick-Sheet.png" },
+        { "name": "wood_block",      "path":"../../assets/gfx/wood_block.png"         },
+        { "name": "soccer_ball",     "path":"../../assets/gfx/soccer_ball.png"        },
+        { "name": "grass_block",     "path":"../../assets/gfx/grass_block.png"        },
+        { "name": "obunga",          "path":"../../assets/gfx/obunga.jpg"             },
+        { "name": "ground",          "path":"../../assets/gfx/ground.png"             },
+        { "name": "death_star",      "path":"../../assets/gfx/death_star.png"         },
+        { "name": "menu_background", "path":"../../assets/gfx/menu_background.png"    }
+    ],
+}

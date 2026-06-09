@@ -1,0 +1,74 @@
+{
+    "player": {
+        "name": "player",
+        "texture": "mother_tick",
+        "data_file": "../../assets/dev/mother_tick.json",
+        "body_type": 2,
+        "shape": "box",
+        "width": 2.0,
+        "height": 1.0,
+        "density": 50.0,
+        "friction": 1000.0,
+        "fixed_rotation": true
+    },
+
+    "wood_platform":
+    {
+        "texture": "wood_block",
+        "data_file": "../../assets/dev/wood_block.json",
+        "body_type": 1,
+        "shape": "box",
+        "width": 1.0,
+        "height": 1.0,
+        "fixed_rotation": true
+    },
+
+    "soccer_ball":
+    {
+        "texture": "soccer_ball",
+        "data_file": "../../assets/dev/soccer_ball.json",
+        "body_type": 2,
+        "shape": "circle",
+        "radius": 0.5,
+        "density": 1.0,
+        "friction": 0.7,
+        "restitution": 0.7
+    },
+
+    "grass_block":
+    {
+        "texture": "grass_block",
+        "data_file": "../../assets/dev/grass_block.json",
+        "body_type": 2,
+        "shape": "box",
+        "width": 1.0,
+        "height": 1.0,
+        "density": 2.0,
+        "friction": 1000.0,
+        "restitution": 0.05
+    },
+
+    "ground":
+    {
+        "texture": "ground",
+        "data_file": "../../assets/dev/ground.json",
+        "body_type": 0,
+        "shape": "box",
+        "width": 20.0,
+        "height": 2.0,
+        "friction": 1.0,
+        "fixed_rotation": true
+    },
+
+    "obunga":
+    {
+        "texture": "obunga",
+        "data_file": "../../assets/dev/obunga.json",
+        "body_type": 2,
+        "shape": "box",
+        "width": 1.359,
+        "height": 2.172,
+        "density": 0.7,
+        "friction": 1.0
+    }
+}
