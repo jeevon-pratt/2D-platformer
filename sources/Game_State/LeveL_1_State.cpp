@@ -138,7 +138,7 @@ void Level1State::OnUpdate(Game2D& app)
             enemy.Respawn();
     }
 
-    app.m_audioManager.PlayAudio("8_bit_music");
+    app.m_audioManager.PlayAudio("GOWR_Theme");
 }
 
 

@@ -10,7 +10,7 @@
 // IMPLEMENTATION
 // **************
 
-void FontManager::LoadFont(std::string_view name, std::string_view filepath, uint8_t size)
+void FontManager::LoadFont(const std::string& name, const std::string& filepath, uint8_t size)
 {
     GAME_2D_LOG_DEBUG("Loading font: %s (point size: %d)\n\n", filepath.data(), size);
 
@@ -29,15 +29,15 @@ void FontManager::LoadFont(std::string_view name, std::string_view filepath, uin
 
 
 
-const TTF_Font* FontManager::Get(std::string_view name) const
+const TTF_Font* FontManager::Get(const std::string& name) const
 {
-    if ( m_fonts.count(name.data()) == 0 )
+    if ( !m_fonts.contains(name) )
     {
         GAME_2D_LOG_ERROR("Could not find font %s\n\n", name.data());
         return nullptr;
     }
 
-    return m_fonts.at( name.data() );
+    return m_fonts.at(name);
 }
 
 

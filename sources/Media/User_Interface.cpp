@@ -51,11 +51,11 @@ void UserInterface::AddBackground(const SpriteCreateInfo& info)
 
 
 
-void UserInterface::AddButton(std::string_view name, const Sprite& image, b2Vec2 pos)
+void UserInterface::AddButton(const std::string& name, const Sprite& image, b2Vec2 pos)
 {
     m_buttons.emplace_back();
 
-    m_buttons.back().name  = name.data();
+    m_buttons.back().name  = name;
     m_buttons.back().image = image;
     m_buttons.back().pos   = pos;
 
@@ -108,10 +108,10 @@ const std::vector<Button>& UserInterface::GetButtons() const
 
 
 
-bool UserInterface::OnClick(std::string_view name) const
+bool UserInterface::OnClick(const std::string& name) const
 {
     if (m_clickedButton != m_buttons.end())
-        return (m_clickedButton->name == name.data());
+        return (m_clickedButton->name == name);
 
     return false;
 }

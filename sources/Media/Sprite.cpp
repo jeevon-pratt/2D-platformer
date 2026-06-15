@@ -1,8 +1,6 @@
 #include <json/value.h>         // Json::Value class
 #include <SDL2/SDL_render.h>    // SDL_SetTextureAlphaMod function
 
-#include <fstream>              // std::ifstream
-
 #include "Media/Sprite.hpp"     // Sprite class
 #include "Utility/Log.hpp"      // GAME_2D_LOG_ERROR macro function
 #include "Utility/Memory.hpp"   // LoadJson function
@@ -22,10 +20,9 @@ static constexpr uint8_t MAX_ANIMATION_FRAMES  = 50;
 // **************
 
 Sprite::Sprite():
-    m_texture        (nullptr),
-    m_currentFrame   { 0, 0, 0, 0 },
-    m_useScreenCoord (true),
-    m_scrollFactor   (1.0f)
+    m_texture      (nullptr),
+    m_screenCoord  (true),
+    m_scrollFactor (1.0f)
 {
     m_animations.reserve(MAX_SPRITE_ANIMATIONS);
 }
@@ -33,61 +30,53 @@ Sprite::Sprite():
 
 
 Sprite::Sprite(const SpriteCreateInfo& info):
-    m_texture        (info.texture),
-    m_currentFrame   { 0, 0, 0, 0 },
-    m_useScreenCoord (info.useScreenCoord),
-    m_scrollFactor   (info.scrollFactor)
+    m_texture      (info.texture),
+    m_screenCoord  (info.screenCoord),
+    m_scrollFactor (info.scrollFactor)
 {
-    if (!info.dataFilePath.empty())
-        LoadAnimations(info.dataFilePath);
+    if (!info.animation.empty())
+        LoadAnimations(info.animation);
 }
 
 
 
-void Sprite::LoadAnimations(std::string_view filepath)
+void Sprite::LoadAnimations(const std::string& filepath)
 {
-    // Sprite data
-    Json::Value root   = LoadJson(filepath);
-    Json::Value frames = root["frames"];
-    Json::Value meta   = root["meta"];
-    Json::Value tags   = meta["frameTags"];
+    Json::Value root = LoadJson(filepath);
 
-    // Every animation frame for the sprite
-    std::vector<Frame> totalFrames;
-    totalFrames.reserve(MAX_ANIMATION_FRAMES);
+    std::vector<Frame> frames;
+    frames.reserve(MAX_ANIMATION_FRAMES);
 
 
     // To store the data for every individual sprite frame
-    for (const Json::Value& currentFrame : frames)
+    for (const Json::Value& frame : root["frames"])
     {
-        Json::Value rect = currentFrame["frame"];
-
         SDL_Rect srcrect;
-        srcrect.x = rect["x"].asInt();
-        srcrect.y = rect["y"].asInt();
-        srcrect.w = rect["w"].asInt();
-        srcrect.h = rect["h"].asInt();
+        srcrect.x = frame["frame"]["x"].asInt();
+        srcrect.y = frame["frame"]["y"].asInt();
+        srcrect.w = frame["frame"]["w"].asInt();
+        srcrect.h = frame["frame"]["h"].asInt();
+ 
+        uint8_t duration = frame["duration"].asUInt();
 
-        uint8_t duration = currentFrame["duration"].asUInt();
-
-        totalFrames.emplace_back( Frame{ srcrect, duration } );
+        frames.emplace_back( Frame{ srcrect, duration } );
     }
 
 
     // To create animation sets from the vector of frame structures
-    for (const Json::Value& currentTag : tags)
+    for (const Json::Value& tag : root["meta"]["frameTags"])
     {
         Animation cycle;
-        std::string cycleName = currentTag["name"].asCString();
 
-        uint8_t begin = currentTag["from"].asUInt();
-        uint8_t end   = currentTag["to"].asUInt();
+        std::string name  = tag["name"].asString();
+        uint8_t     begin = tag["from"].asUInt();
+        uint8_t     end   = tag["to"].asUInt();
 
         // Create an animation set from a subset of frames
         for (uint8_t k = begin; k <= end; ++k)
-            cycle.AddFrame(totalFrames[k]);
+            cycle.AddFrame(frames[k]);
 
-        m_animations.emplace(cycleName, cycle);
+        m_animations.emplace(name, cycle);
     }
 
 
@@ -127,7 +116,7 @@ uint16_t Sprite::GetFrameHeight() const
 
 bool Sprite::UseScreenCoord() const
 {
-    return m_useScreenCoord;
+    return m_screenCoord;
 }
 
 
@@ -146,16 +135,16 @@ void Sprite::SetAlphaMod(uint8_t alpha)
 
 
 
-void Sprite::PlayAnimation(std::string_view name)
+void Sprite::PlayAnimation(const std::string& name)
 {
-    if ( m_animations.count(name.data()) == 0 )
+    if ( !m_animations.contains(name) )
     {
         GAME_2D_LOG_ERROR("Could not display \'%s\' animation.\n\n", name.data());
         return;
     }
 
 
-    Animation& cycle = m_animations[ name.data() ];
+    Animation& cycle = m_animations[name];
 
     cycle.StepTime();
 

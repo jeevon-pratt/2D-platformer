@@ -1,5 +1,4 @@
 #include <SDL2/SDL_error.h>             // SDL_GetError function
-#include <SDL2/SDL_image.h>             // IMG_LoadTexture and IMG_GetError functions
 #include <SDL2/SDL_render.h>            // SDL renderer functions
 #include <SDL2/SDL_surface.h>           // SDL_FreeSurface function
 #include <SDL2/SDL_ttf.h>               // TTF_Font struct
@@ -21,8 +20,8 @@
 // SYMBOLIC CONSTANTS
 // ******************
 
-static constexpr int16_t  DRIVER_INDEX = -1;
-static constexpr uint32_t INIT_FLAGS   = SDL_RENDERER_PRESENTVSYNC;
+static constexpr int16_t  INDEX       = -1;
+static constexpr uint32_t INIT_FLAGS  = SDL_RENDERER_PRESENTVSYNC;
 
 
 
@@ -31,7 +30,7 @@ static constexpr uint32_t INIT_FLAGS   = SDL_RENDERER_PRESENTVSYNC;
 // **************
 
 Renderer::Renderer(const Window& window):
-    m_rendererContext ( SDL_CreateRenderer((SDL_Window*)window.GetContext(), DRIVER_INDEX, INIT_FLAGS) )
+    m_rendererContext ( SDL_CreateRenderer((SDL_Window*)window.GetContext(), INDEX, INIT_FLAGS) )
 {
     if (!m_rendererContext)
     {

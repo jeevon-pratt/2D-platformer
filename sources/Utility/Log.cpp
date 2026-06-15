@@ -3,7 +3,7 @@
 
 #include <fstream>              // std::ofstream
 #include <iostream>             // std::cerr
-#include <string_view>          // std::string_view
+#include <string>               // std::string
 
 #include "Log.hpp"              // Logging functions declarations
 
@@ -17,17 +17,17 @@ static std::ofstream s_logFile;
 
 
 
-bool InitLog(std::string_view filepath, LOG_PRIORITY priority)
+bool InitLog(const std::string& filepath, LOG_PRIORITY priority)
 {
     SDL_LogSetOutputFunction(LogToFile, nullptr);
     SDL_LogSetPriority( SDL_LOG_CATEGORY_APPLICATION, static_cast<SDL_LogPriority>(priority) );
 
 
     // To create the log file if it does not exist and clear the contents if it does
-    s_logFile.open(filepath.data(), std::ios::out | std::ios::trunc);
+    s_logFile.open(filepath, std::ios::out | std::ios::trunc);
     s_logFile.close();
 
-    s_logFile.open(filepath.data(), std::ios::app);
+    s_logFile.open(filepath, std::ios::app);
 
 
     return s_logFile.is_open();

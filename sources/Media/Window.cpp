@@ -6,7 +6,7 @@
 #include <SDL2/SDL_video.h>         // SDL window functionality
 
 #include <cstdlib>                  // std::exit, EXIT_FAILURE
-#include <string_view>              // std::string_view
+#include <string_view>              // const std::string&
 
 #include "Media/Window.hpp"         // Window class
 #include "Utility/Log.hpp"          // GAME_2D_LOG_CRITICAL macro function
@@ -26,7 +26,7 @@ static constexpr uint32_t INIT_FLAGS = SDL_WINDOW_SHOWN | SDL_WINDOW_ALWAYS_ON_T
 // IMPLEMENTATION
 // **************
 
-Window::Window(std::string_view title, uint16_t width, uint16_t height):
+Window::Window(const std::string& title, uint16_t width, uint16_t height):
     m_windowContext ( SDL_CreateWindow(title.data(), WINDOW_X, WINDOW_Y, width, height, INIT_FLAGS) )
 {
     if (!m_windowContext)
@@ -80,7 +80,7 @@ void Window::HandleInput(const SDL_Event& event) const
 
 
 
-void Window::ShowMessageBox(std::string_view title, std::string_view message) const
+void Window::ShowMessageBox(const std::string& title, const std::string& message) const
 {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
                              title.data(),

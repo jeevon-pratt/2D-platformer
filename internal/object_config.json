@@ -1,74 +1,121 @@
 {
-    "player": {
+    "player":
+    {
         "name": "player",
         "texture": "mother_tick",
-        "data_file": "../../assets/dev/mother_tick.json",
+        "animation": "../../assets/dev/mother_tick.json",
         "body_type": 2,
         "shape": "box",
-        "width": 2.0,
-        "height": 1.0,
         "density": 50.0,
         "friction": 1000.0,
-        "fixed_rotation": true
+        "fixed_rotation": true,
+        "position": [0.7, 16.0],
+        "width": 2.0,
+        "height": 1.0
     },
 
-    "wood_platform":
-    {
-        "texture": "wood_block",
-        "data_file": "../../assets/dev/wood_block.json",
-        "body_type": 1,
-        "shape": "box",
-        "width": 1.0,
-        "height": 1.0,
-        "fixed_rotation": true
-    },
 
-    "soccer_ball":
-    {
-        "texture": "soccer_ball",
-        "data_file": "../../assets/dev/soccer_ball.json",
-        "body_type": 2,
-        "shape": "circle",
-        "radius": 0.5,
-        "density": 1.0,
-        "friction": 0.7,
-        "restitution": 0.7
-    },
 
-    "grass_block":
-    {
-        "texture": "grass_block",
-        "data_file": "../../assets/dev/grass_block.json",
-        "body_type": 2,
-        "shape": "box",
-        "width": 1.0,
-        "height": 1.0,
-        "density": 2.0,
-        "friction": 1000.0,
-        "restitution": 0.05
-    },
+
+    "objects":
+    [
+        {
+            "name": "wood_platform",
+            "texture": "wood_block",
+            "animation": "../../assets/dev/wood_block.json",
+            "body_type": 1,
+            "shape": "box",
+            "fixed_rotation": true,
+            "friction": 0.2,
+            "angle": 90,
+            "position": [-20.0, 3.5],
+            "width": 1.0,
+            "height": 1.0,
+        },
+        {
+            "name": "soccer_ball",
+            "texture": "soccer_ball",
+            "animation": "../../assets/dev/soccer_ball.json",
+            "body_type": 2,
+            "shape": "ball",
+            "density": 1.0,
+            "friction": 0.7,
+            "restitution": 0.7,
+            "position": [0.8, 20.0],
+            "radius": 0.5
+        },
+        {
+            "name": "grass_block",
+            "texture": "grass_block",
+            "animation": "../../assets/dev/grass_block.json",
+            "body_type": 2,
+            "shape": "box",
+            "density": 2.0,
+            "friction": 1000.0,
+            "restitution": 0.05,
+            "position": [0.7, 25.0],
+            "width": 1.0,
+            "height": 1.0
+        }
+    ],
+    
+
+
 
     "ground":
     {
+        "name": "ground_platform",
         "texture": "ground",
-        "data_file": "../../assets/dev/ground.json",
+        "animation": "../../assets/dev/ground.json",
         "body_type": 0,
         "shape": "box",
+        "friction": 0.2,
+        "fixed_rotation": true,
         "width": 20.0,
         "height": 2.0,
-        "friction": 1.0,
-        "fixed_rotation": true
+        "positions": [
+            [  0.0,  0.0],  [ 20.0, -0.5],  [ 40.0, -1.0],
+            [ 60.0, -1.5],  [ 80.0, -2.0],  [100.0, -2.5],
+            [120.0, -3.0],  [140.0, -3.5],  [160.0, -4.0],
+            [180.0, -4.5],  [200.0, -5.0],  [220.0, -5.5],
+            [240.0, -6.0],  [260.0, -6.5],  [280.0, -7.0],
+            [300.0, -7.5],  [320.0, -8.0],  [340.0, -8.5],
+            [360.0, -9.0],  [380.0, -9.5]
+        ]
     },
+
+
+
 
     "obunga":
     {
+        "name": "enemy_obunga",
         "texture": "obunga",
-        "data_file": "../../assets/dev/obunga.json",
+        "animation": "../../assets/dev/obunga.json",
         "body_type": 2,
         "shape": "box",
+        "density": 0.7,
+        "friction": 0.2,
         "width": 1.359,
         "height": 2.172,
-        "density": 0.7,
-        "friction": 1.0
+        "positions": [
+            [100.00, -7.00],    [100.25, -5.64],    [100.50, -4.28],
+            [100.75, -2.92],    [101.00, -1.56],    [101.25, -0.20],
+            [101.50,  1.16],    [101.75,  2.52],    [102.00,  3.88],
+            [102.25,  5.24],    [102.50,  6.60],    [102.75,  7.96],
+            [103.00,  9.32],    [103.25, 10.68],    [103.50, 12.04],
+            [103.75, 13.40],    [104.00, 14.76],    [104.25, 16.12],
+            [104.50, 17.48],    [104.75, 18.84],    [105.00, 20.20],
+            [105.25, 21.56],    [105.50, 22.92],    [105.75, 24.28],
+            [106.00, 25.64],    [106.25, 27.00],    [106.50, 28.36],
+            [106.75, 29.72],    [107.00, 31.08],    [107.25, 32.44],
+            [107.50, 33.80],    [107.75, 35.16],    [108.00, 36.52],
+            [108.25, 37.88],    [108.50, 39.24],    [108.75, 40.60],
+            [109.00, 41.96],    [109.25, 43.32],    [109.50, 44.68],
+            [109.75, 46.04],    [110.00, 47.40],    [110.25, 48.76],
+            [110.50, 50.12],    [110.75, 51.48],    [111.00, 52.84],
+            [111.25, 54.20],    [111.50, 55.56],    [111.75, 56.92],
+            [112.00, 58.28],    [112.25, 59.64]
+        ]
     }
 }

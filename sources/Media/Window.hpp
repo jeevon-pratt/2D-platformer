@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string_view>      // std::string_view
+#include <string>      // std::string
 
 union  SDl_Event;
 struct SDL_Window;
@@ -16,7 +16,7 @@ public:
     // ==============
 
     // Main Constructor
-    Window(std::string_view title, uint16_t width, uint16_t height);
+    Window(const std::string& title, uint16_t width, uint16_t height);
 
     // Returns the SDl window context
     const SDL_Window* GetContext() const;
@@ -31,7 +31,7 @@ public:
     void HandleInput(const SDL_Event& event) const;
 
     // Shows a pop-up window with a message
-    void ShowMessageBox(std::string_view title, std::string_view message) const;
+    void ShowMessageBox(const std::string& title, const std::string& message) const;
 
     // Destroys the internal SDL_Window
     ~Window();

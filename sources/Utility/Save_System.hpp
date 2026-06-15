@@ -2,7 +2,7 @@
 
 #include <box2d/b2_math.h>              // b2Vec2 class
 
-#include <string_view>                  // std::string_view
+#include <string>                       // std::string
 
 #include "Game_State/Game_State.hpp"    // GAME_STATE_TYPE enum
 
@@ -31,7 +31,7 @@ struct SaveFileData
 //
 // Note: This function returns true if the save file is opened successfully
 //       and false otherwise
-bool OpenSaveFile(std::string_view filepath);
+bool OpenSaveFile(const std::string& filepath);
 
 
 // Returns a boolean that indicates whether a save currently exists

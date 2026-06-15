@@ -13,8 +13,8 @@
     ],
 
     "font_sizes": [
-        12, 18, 24, 36, 48, 60]
-    ,
+        12, 18, 24, 36, 48, 60
+    ],
 
     "textures": [
         { "name": "mother_tick",     "path": "../../assets/gfx/mother_tick-Sheet.png" },

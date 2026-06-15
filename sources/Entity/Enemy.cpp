@@ -110,10 +110,7 @@ bool Enemy::IsCoolDownExpired() const
 
 void Enemy::Respawn()
 {
-    GAME_2D_ASSERT(m_body);
-
-    m_body->SetTransform(m_spawnPoint, m_body->GetAngle());
-    m_body->SetLinearVelocity( b2Vec2(0.0f, 0.0f) );
+    GameObject::Respawn();
 
     m_health = m_maxHealth;
 }

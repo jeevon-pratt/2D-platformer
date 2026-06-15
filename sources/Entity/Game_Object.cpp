@@ -1,14 +1,19 @@
 #include <box2d/b2_body.h>              // b2Body class, b2BodyDef struct, b2BodyType enum
 #include <box2d/b2_circle_shape.h>      // b2CircleShape class
+#include <box2d/b2_edge_shape.h>        // b2EdgeShape class
 #include <box2d/b2_fixture.h>           // b2Fixture class
 #include <box2d/b2_polygon_shape.h>     // b2PolygonShape class
 #include <box2d/b2_world.h>             // b2World class
 #include <json/value.h>                 // Json:::Value class
 
+#include <cmath>                        // M_PI constant
+#include <vector>                       // std::vector
+
 #include "Entity/Game_Object.hpp"       // GameObject class
 #include "Media/Sprite.hpp"             // SpriteCreateInfo struct
 #include "Media/Texture_Manager.hpp"    // TextureManager class
 #include "Utility/Assert.hpp"           // GAME_2D_ASSERT macro function
+#include "Utility/Log.hpp"              // GAME_2D_LOG_ERROR macro function
 
 
 // **************
@@ -19,7 +24,7 @@ GameObject::GameObject():
     m_isInverted (false),
     m_body       (nullptr),
     m_fixture    (nullptr),
-    m_spawnPoint (0.0f, 0.0f)
+    m_spawn      (0.0f, 0.0f)
 {
 }
 
@@ -30,7 +35,7 @@ GameObject::GameObject(const GameObject& object):
     m_isInverted (false),
     m_body       (object.m_body),
     m_fixture    (object.m_fixture),
-    m_spawnPoint (object.m_spawnPoint)
+    m_spawn      (object.m_spawn)
 {
 }
 
@@ -42,7 +47,7 @@ void GameObject::operator=(const GameObject& object)
     m_isInverted = false;
     m_body       = object.m_body;
     m_fixture    = object.m_fixture;
-    m_spawnPoint = object.m_spawnPoint;
+    m_spawn      = object.m_spawn;
 }
 
 
@@ -50,9 +55,10 @@ void GameObject::operator=(const GameObject& object)
 void GameObject::CreateSprite(const TextureManager& manager, const Json::Value& sprite)
 {
     SpriteCreateInfo info;
-    info.texture        = manager.Get( sprite["texture"].asString() );
-    info.dataFilePath   = sprite["data_file"].asString();
-    info.useScreenCoord = false;
+    info.texture      = manager.Get( sprite["texture"].asString() );
+    info.animation    = sprite["animation"].asString();
+    info.screenCoord  = false;
+    info.scrollFactor = 1.0f;
 
     m_sprite = Sprite(info);
 }
@@ -61,40 +67,22 @@ void GameObject::CreateSprite(const TextureManager& manager, const Json::Value& 
 
 void GameObject::CreateHitBox(b2World& world, const Json::Value& object)
 {
+    float   angle = object["angle"].asFloat();
+    float   xPos  = object["position"][0].asFloat();
+    float   yPos  = object["position"][1].asFloat();
+    uint8_t type  = object["body_type"].asUInt();
+
+
     b2BodyDef bodyDef;
-    bodyDef.type          = static_cast<b2BodyType>( object["body_type"].asUInt() );
+    bodyDef.type          = static_cast<b2BodyType>(type);
     bodyDef.fixedRotation = object["fixed_rotation"].asBool();
+    bodyDef.position      = b2Vec2(xPos, yPos);
+    bodyDef.angle         = angle * static_cast<float>(M_PI / 180.0);
 
-    m_body = world.CreateBody(&bodyDef);
-    m_body->SetLinearDamping(0.1f);
-    m_body->SetAngularDamping(0.1f);
+    m_body  = world.CreateBody(&bodyDef);
+    m_spawn = b2Vec2(xPos, yPos);
 
-    b2FixtureDef fixtureDef;
-    fixtureDef.density     = object["density"].asFloat();
-    fixtureDef.friction    = object["friction"].asFloat();
-    fixtureDef.restitution = object["restitution"].asFloat();
-
-
-    if (object["shape"].asString() == "box")
-    {
-        float hx = object["width" ].asFloat() / 2.0f;
-        float hy = object["height"].asFloat() / 2.0f;
-
-        b2PolygonShape boxShape;
-        boxShape.SetAsBox(hx, hy);
-
-        fixtureDef.shape = &boxShape;
-        m_fixture        = m_body->CreateFixture(&fixtureDef);
-    }
-
-    else if (object["shape"].asString() == "circle")
-    {
-        b2CircleShape ballShape;
-
-        ballShape.m_radius = object["radius"].asFloat();
-        fixtureDef.shape   = &ballShape;
-        m_fixture          = m_body->CreateFixture(&fixtureDef);
-    }
+    CreateFixture(object);
 }
 
 
@@ -142,7 +130,7 @@ float GameObject::GetAngle() const
 
 b2Vec2 GameObject::GetSpawnPoint() const
 {
-    return m_spawnPoint;
+    return m_spawn;
 }
 
 
@@ -160,7 +148,7 @@ void GameObject::SetAngle(float angle)
 
 void GameObject::SetSpawnPoint(b2Vec2 pos)
 {
-    m_spawnPoint = pos;
+    m_spawn = pos;
 }
 
 
@@ -221,7 +209,86 @@ void GameObject::Respawn()
 
     b2Vec2 gravity = m_body->GetWorld()->GetGravity();
 
-    m_body->SetTransform(m_spawnPoint, 0.0f);
+    m_body->SetTransform(m_spawn, 0.0f);
     m_body->SetLinearVelocity( b2Vec2(0.0f, 0.0f) );
     m_body->ApplyForceToCenter(gravity, true);
+}
+
+
+
+void GameObject::CreateFixture(const Json::Value& object)
+{
+    b2FixtureDef fixtureDef;
+    fixtureDef.density     = object["density"].asFloat();
+    fixtureDef.friction    = object["friction"].asFloat();
+    fixtureDef.restitution = object["restitution"].asFloat();
+
+    std::string shape = object["shape"].asString();
+
+    if (shape == "box")
+    {
+        float hx = 0.5f * object["width"].asFloat();
+        float hy = 0.5f * object["height"].asFloat();
+
+        b2PolygonShape box;
+        box.SetAsBox(hx, hy);
+
+        fixtureDef.shape = &box;
+
+
+        m_fixture = m_body->CreateFixture(&fixtureDef);
+    }
+
+    else if (shape == "ball")
+    {
+        b2CircleShape ball;
+        ball.m_radius = object["radius"].asFloat();
+
+        fixtureDef.shape = &ball;
+
+
+        m_fixture = m_body->CreateFixture(&fixtureDef);
+    }
+
+    else if (shape == "polygon")
+    {
+        std::vector<b2Vec2> vertices;
+
+        for (const Json::Value& vertex : object["vertices"])
+        {
+            float vx = vertex[0].asFloat();
+            float vy = vertex[1].asFloat();
+
+            vertices.emplace_back(vx, vy);
+        }
+
+        b2PolygonShape polygon;
+        polygon.Set( vertices.data(), vertices.size() );
+
+        fixtureDef.shape = &polygon;
+
+        m_fixture = m_body->CreateFixture(&fixtureDef);
+    }
+
+    else if (shape == "edge")
+    {
+        float vx1 = object["vertex_1"][0].asFloat();
+        float vy1 = object["vertex_1"][1].asFloat();
+
+        float vx2 = object["vertex_2"][0].asFloat();
+        float vy2 = object["vertex_2"][1].asFloat();
+
+        b2Vec2 vertex1(vx1, vy1);
+        b2Vec2 vertex2(vx2, vy2);
+
+        b2EdgeShape edge;
+        edge.SetTwoSided(vertex1, vertex2);
+
+        fixtureDef.shape = &edge;
+
+        m_fixture = m_body->CreateFixture(&fixtureDef);
+    }
+
+    else
+        GAME_2D_LOG_ERROR("Object has an invalid shape field\n\n");
 }

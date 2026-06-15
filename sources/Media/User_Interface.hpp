@@ -1,13 +1,12 @@
 #pragma once
 
-#include <string_view>          // std::string_view
+#include <string>               // std::string
 #include <vector>               // std::vector
 
 #include "Media/Button.hpp"     // Button class
 #include "Media/Sprite.hpp"     // Sprite class, SpriteCreateInfo struct
 
-union SDL_Event;
-
+union  SDL_Event;
 struct b2Vec2;
 
 
@@ -33,7 +32,7 @@ public:
     void AddBackground(const SpriteCreateInfo& info);
 
     // Adds a button to the interface
-    void AddButton(std::string_view name, const Sprite& image, b2Vec2 pos);
+    void AddButton(const std::string& name, const Sprite& image, b2Vec2 pos);
 
     // Handles user input on the interface
     void HandleInput(const SDL_Event& event);
@@ -48,7 +47,7 @@ public:
     //
     // Note: The 'HandleInput' method must be called before this method in the
     //       game loop. Otherwise, this method will always return false.
-    bool OnClick(std::string_view name) const;
+    bool OnClick(const std::string& name) const;
 
 private:
     // The background of the interface

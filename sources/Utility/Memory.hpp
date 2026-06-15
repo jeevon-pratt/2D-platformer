@@ -5,7 +5,8 @@
 #endif
 
 #include <json/json.h>      // Jsoncpp functionality
-#include <string_view>      // std::string_view
+
+#include <string>           // std::string
 
 
 
@@ -23,7 +24,7 @@
 
 #else
 
-    void* __cdecl operator new(size_t size) noexcept(false);
+    void* operator new(size_t size) noexcept(false); 
 
 #endif
 
@@ -31,7 +32,7 @@
  // Operator overload for observing the deallocation of dynamic memory
  //
  // Note: Information is recorded using the debug logging system.
-void operator delete(void* memory, size_t size);
+void operator delete(void* memory, size_t size) noexcept;
 
 
 
@@ -43,9 +44,9 @@ void operator delete(void* memory, size_t size);
  // Function for loading data from JSON File
  //
  // Note: Empty data is returned and prints an error message is logged upon failure.
-Json::Value LoadJson(std::string_view filepath);
+Json::Value LoadJson(const std::string& filepath);
 
  // Function for overwriting data from JSON File
  //
  // Note: An error message is logged upon failure.
-void OverWriteJson(std::string_view filepath, Json::Value& root);
+void OverWriteJson(const std::string& filepath, Json::Value& root);

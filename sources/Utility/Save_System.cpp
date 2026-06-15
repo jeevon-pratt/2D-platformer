@@ -3,7 +3,6 @@
 #include <fstream>                      // std::fstream
 #include <memory>                       // std::unique_ptr
 #include <string>                       // std::string
-#include <string_view>                  // std::string_view
 
 #include "Utility/Log.hpp"              // GAME_2D_LOG_WARN macro
 #include "Utility/Save_System.hpp"      // SaveFileData struct
@@ -16,23 +15,23 @@
 // *********************
 
 static std::fstream s_saveFile;   // Oject that reads and write to the save file
-static std::string  s_filePath;   // The file path of the save file
+static std::string  s_filepath;   // The file path of the save file
 static bool         s_saveExists; // Determines if a save currently exists
 
 
 
-bool OpenSaveFile(std::string_view filepath)
+bool OpenSaveFile(const std::string& filepath)
 {
-    s_filePath = filepath.data();
+    s_filepath = filepath;
 
     // If the save file does not exist,this operation will fail.
-    s_saveFile.open(s_filePath);
+    s_saveFile.open(s_filepath);
 
 
     if ( !s_saveFile.is_open() )
     {
         s_saveFile.clear();
-        s_saveFile.open(s_filePath, std::ios::in | std::ios::out | std::ios::trunc);
+        s_saveFile.open(s_filepath, std::ios::in | std::ios::out | std::ios::trunc);
 
         s_saveExists = false;
     }
@@ -67,7 +66,7 @@ void WriteToSaveFile(const SaveFileData& data)
     root["y"]      = data.playerPos.y;
     root["health"] = data.playerHealth;
 
-    OverWriteJson(s_filePath, root);
+    OverWriteJson(s_filepath, root);
 }
 
 
@@ -77,7 +76,7 @@ SaveFileData LoadFromSaveFile()
     if (!s_saveExists)
         return SaveFileData{};
 
-    Json::Value root = LoadJson(s_filePath);
+    Json::Value root = LoadJson(s_filepath);
 
 
     SaveFileData data;

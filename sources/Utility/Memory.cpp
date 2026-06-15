@@ -1,9 +1,9 @@
-#include <json/json.h>          // Jsoncpp functionality
+#include <json/json.h>         // JsonCpp functionality
 
 #include <fstream>              // std::ifstream, std::ofstream
 #include <new>                  // std::bad_alloc
 #include <stdlib.h>             // malloc and free functions
-#include <string_view>          // std::string_view
+#include <string>               // std::string
 
 #include "Utility/Log.hpp"      // GAME_2D_LOG_ERROR, GAME_2D_LOG_VERBOSE macro
 
@@ -19,27 +19,11 @@ static size_t s_totalMemory = 0;
 
 
 #ifdef _MSC_VER
-
     _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(size) _VCRT_ALLOCATOR
     void* __cdecl operator new(size_t size) noexcept(false)
-    {
-        void* allocation = malloc(size);
-
-        if (!allocation)
-            throw std::bad_alloc();
-
-
-        s_totalMemory += size;
-
-        GAME_2D_LOG_VERBOSE("Allocating %u bytes of memory", (unsigned int)size);
-        GAME_2D_LOG_VERBOSE("Total Heap Memory Allocated: %u bytes\n\n", (unsigned int)s_totalMemory);
-
-        return allocation;
-    }
-
 #else
-
-    void* __cdecl operator new(size_t size) noexcept(false)
+    void* operator new(size_t size) noexcept(false)
+#endif
     {
         void* allocation = malloc(size);
 
@@ -55,11 +39,9 @@ static size_t s_totalMemory = 0;
         return allocation;
     }
 
-#endif
 
 
-
-void operator delete(void* memory, size_t size)
+void operator delete(void* memory, size_t size) noexcept
 {
     free(memory);
 
@@ -71,38 +53,37 @@ void operator delete(void* memory, size_t size)
 
 
 
-Json::Value LoadJson(std::string_view filepath)
+Json::Value LoadJson(const std::string& filepath)
 {
-    static std::ifstream s_file;
+    static std::ifstream    s_fileIn;
     Json::CharReaderBuilder builder;
-    Json::Value root;
-    Json::String error;
+    Json::Value             root;
+    Json::String            error;
 
     builder["collectComments"] = false;
 
-    s_file.open(filepath.data());
+    s_fileIn.open(filepath);
 
 
-    if ( !Json::parseFromStream(builder, s_file, &root, &error) )
+    if ( !Json::parseFromStream(builder, s_fileIn, &root, &error) )
     {
         GAME_2D_LOG_ERROR("Couldn't open %s\n%s\n\n", filepath.data(), error.c_str());
-        s_file.clear();
+        s_fileIn.clear();
     }
 
-    s_file.close();
+    s_fileIn.close();
 
     return root;
 }
 
 
 
-
-void OverWriteJson(std::string_view filepath, Json::Value& root)
+void OverWriteJson(const std::string& filepath, Json::Value& root)
 {
     static std::ofstream s_fileOut;
 
     // To clear the save file before writing new data
-    s_fileOut.open(filepath.data(), std::ios::trunc);
+    s_fileOut.open(filepath, std::ios::trunc);
 
 
      if ( !s_fileOut.is_open() )

@@ -5,6 +5,8 @@
 #include "Media/Sprite.hpp"        // Sprite class
 
 struct SDL_Texture;
+class  b2Body;
+class  b2Fixture;
 class  b2World;
 class  TextureManager;
 
@@ -96,6 +98,13 @@ public:
     virtual ~GameObject() = default;
 
 protected:
+    // INTERNAL FUNCTIONS
+    // ==================
+
+    // Creates the main fixture for the object's physics body
+    virtual void CreateFixture(const Json::Value& object);
+
+protected:
     // The animation sprite of the game object
     //
     // Note: This value is not populated upon initialization if the default constructor
@@ -129,5 +138,5 @@ protected:
     // The spawn point of the game object
     //
     // Note: The value is set when the physics body is created.
-    b2Vec2 m_spawnPoint;
+    b2Vec2 m_spawn;
 };

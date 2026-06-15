@@ -3,7 +3,6 @@
 #include <SDL2/SDL_audio.h>     // SDL_AudioDeviceID typedef and SDL_AudioSpec struct
 
 #include <string>               // std::string
-#include <string_view>          // std::string_view
 #include <unordered_map>        // std::unordered_map
 
 
@@ -36,7 +35,7 @@ public:
     AudioManager();
 
     // Loads audio data with the specified file path
-    void LoadAudio(std::string_view name, std::string_view filepath);
+    void LoadAudio(const std::string& name, const std::string& filepath);
 
     // Plays the audio file with the specified name
     //
@@ -45,13 +44,13 @@ public:
     //
     //       2) If looping  is not enabled the 'ResetAudio' method would have to be
     //          called in order to replay the audio file from the beginning.
-    void PlayAudio(std::string_view name, bool loopEnabled = true);
+    void PlayAudio(const std::string& name, bool loopEnabled = true);
 
     // Pauses the audio file with the specified name
-    void PauseAudio(std::string_view name);
+    void PauseAudio(const std::string& name);
 
     // Used for replaying the audio file with the specified name
-    void ResetAudio(std::string_view name);
+    void ResetAudio(const std::string& name);
 
     // Closes audio devices and frees all audio data loaded by the manager
     ~AudioManager();

@@ -3,7 +3,6 @@
 #include <SDL2/SDL_pixels.h>    // SDL_Color struct
 
 #include <string>               // std::string
-#include <string_view>          // std::string_view
 #include <unordered_map>        // std::unordered_map
 
 struct _TTF_Font;               // typedef struct _TTF_Font TTF_Font
@@ -35,10 +34,10 @@ public:
     FontManager() = default;
 
     // Loads fonts with the specified .ttf file path and point size
-    void LoadFont(std::string_view name, std::string_view filepath, uint8_t size);
+    void LoadFont(const std::string& name, const std::string& filepath, uint8_t size);
 
     // Returns the font with the specified name and point size
-    const _TTF_Font* Get(std::string_view name) const;
+    const _TTF_Font* Get(const std::string& name) const;
 
     // Frees all font data loaded by the manager
     ~FontManager();

@@ -26,12 +26,13 @@ TextureManager::TextureManager(const Renderer& renderer):
 
 
 
-void TextureManager::LoadTexture(std::string_view name, std::string_view filepath)
+void TextureManager::LoadTexture(const std::string& name, const std::string& filepath)
 {
     GAME_2D_LOG_DEBUG("Loading texture: %s\n\n", filepath.data());
 
 
-    SDL_Texture* texture = IMG_LoadTexture( const_cast<SDL_Renderer*>(m_rendererContext), filepath.data() );
+    SDL_Renderer* context = const_cast<SDL_Renderer*>(m_rendererContext);
+    SDL_Texture*  texture = IMG_LoadTexture(context, filepath.data());
 
     if (!texture)
     {
@@ -39,20 +40,20 @@ void TextureManager::LoadTexture(std::string_view name, std::string_view filepat
         return;
     }
 
-    m_textures.emplace(name.data(), texture);
+    m_textures.emplace(name, texture);
 }
 
 
 
-const SDL_Texture* TextureManager::Get(std::string_view name) const
+const SDL_Texture* TextureManager::Get(const std::string& name) const
 {
-    if ( m_textures.count(name.data()) == 0 )
+    if ( !m_textures.contains(name) )
     {
         GAME_2D_LOG_ERROR("Could not find texture %s\n\n", name.data());
         return nullptr;
     }
 
-    return m_textures.at( name.data() );
+    return m_textures.at(name);
 }
 
 

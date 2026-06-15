@@ -1,8 +1,8 @@
 #pragma once
 
-#include <SDL2/SDL_Log.h>       // SDL logging functions
+#include <SDL2/SDL_Log.h>     // SDL logging functions
 
-#include <string_view>          // std::string_view
+#include <string>             // std::string
 
 
 // ************
@@ -33,7 +33,7 @@ enum LOG_PRIORITY
 //        2) This function should be called before attempting to use the SDL logging system
 //           or the custom logging macro functions. Otherwise, all debugging message will
 //           be output to the console instead of a log file.
-bool InitLog(std::string_view filepath, LOG_PRIORITY priority);
+bool InitLog(const std::string& filepath, LOG_PRIORITY priority);
 
 
 // Returns a boolean indicating if the logging system is initialized
@@ -74,37 +74,37 @@ void CloseLogFile();
     // Logs messages with priority SDL_LOG_PRIORITY_VERBOSE
     #define GAME_2D_LOG_VERBOSE(fmt, ...) \
         if ( LogFileOpen() ) \
-            SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, fmt, __VA_ARGS__)
+            SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
 
 
     // Logs messages with priority SDL_LOG_PRIORITY_DEBUG
     #define GAME_2D_LOG_DEBUG(fmt, ...) \
         if ( LogFileOpen() ) \
-            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, fmt, __VA_ARGS__)
+            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
 
 
     // Logs messages with priority SDL_LOG_PRIORITY_INFO
     #define GAME_2D_LOG_INFO(fmt, ...) \
         if ( LogFileOpen() ) \
-            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, fmt, __VA_ARGS__)
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
 
 
     // Logs messages with priority SDL_LOG_PRIORITY_WARN
     #define GAME_2D_LOG_WARN(fmt, ...) \
         if ( LogFileOpen() ) \
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, fmt, __VA_ARGS__)
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
 
 
     // Logs messages with priority SDL_LOG_PRIORITY_ERROR
     #define GAME_2D_LOG_ERROR(fmt, ...) \
         if ( LogFileOpen() ) \
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, fmt, __VA_ARGS__)
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
 
 
     // Logs messages with priority SDL_LOG_PRIORITY_CRITICAL
     #define GAME_2D_LOG_CRITICAL(fmt, ...) \
         if ( LogFileOpen() ) \
-            SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, fmt, __VA_ARGS__)
+            SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
 
 #else
 

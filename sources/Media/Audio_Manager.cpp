@@ -1,7 +1,5 @@
 #include <SDL2/SDL_timer.h>     // SDL_GetTicks function
 
-#include <iostream>             // std::cout
-
 #include "Media/Audio.hpp"      // AudioManager class
 #include "Utility/Log.hpp"      // GAME_2D_LOG_ERROR macro function
 #include "Utility/Math.hpp"     // RoundToInt function
@@ -27,12 +25,12 @@ AudioManager::AudioManager()
 
 
 
-void AudioManager::LoadAudio(std::string_view name, std::string_view filepath)
+void AudioManager::LoadAudio(const std::string& name, const std::string& filepath)
 {
     GAME_2D_LOG_DEBUG("Loading audio: %s\n\n", filepath.data());
 
 
-    AudioData& data = m_data[ name.data() ];
+    AudioData& data = m_data[name];
 
     if ( !SDL_LoadWAV(filepath.data(), &data.wavSpec, &data.wavBuffer, &data.wavLength) )
     {
@@ -55,16 +53,16 @@ void AudioManager::LoadAudio(std::string_view name, std::string_view filepath)
 
 
 
-void AudioManager::PlayAudio(std::string_view name, bool loopEnabled)
+void AudioManager::PlayAudio(const std::string& name, bool loop)
 {
-    if ( m_data.count(name.data()) == 0 )
+    if ( !m_data.contains(name) )
     {
         GAME_2D_LOG_ERROR("Could not find audio %s\n\n", name.data());
         return;
     }
 
 
-    AudioData& data = m_data[ name.data() ];
+    AudioData& data = m_data[name];
 
     if (!data.isPlaying)
     {
@@ -80,7 +78,7 @@ void AudioManager::PlayAudio(std::string_view name, bool loopEnabled)
 
     if (elapsedTime > data.duration)
     {
-        if (!loopEnabled)
+        if (!loop)
         {
             data.isPlaying = false;
 
@@ -97,16 +95,16 @@ void AudioManager::PlayAudio(std::string_view name, bool loopEnabled)
 
 
 
-void AudioManager::PauseAudio(std::string_view name)
+void AudioManager::PauseAudio(const std::string& name)
 {
-    if ( m_data.count(name.data()) == 0 )
+    if ( !m_data.contains(name) )
     {
         GAME_2D_LOG_ERROR("Could not find %s\n\n", name.data());
         return;
     }
 
 
-    AudioData& data = m_data[ name.data() ];
+    AudioData& data = m_data[name];
 
     // Stops the playing of the audio file
     if (data.isPlaying)
@@ -119,16 +117,16 @@ void AudioManager::PauseAudio(std::string_view name)
 
 
 
-void AudioManager::ResetAudio(std::string_view name)
+void AudioManager::ResetAudio(const std::string& name)
 {
-    if ( m_data.count(name.data()) == 0 )
+    if ( !m_data.contains(name) )
     {
         GAME_2D_LOG_ERROR("Could not find %s\n\n", name.data());
         return;
     }
 
 
-    AudioData& data = m_data[ name.data() ];
+    AudioData& data = m_data[name];
 
     SDL_ClearQueuedAudio(data.deviceID);
     SDL_QueueAudio( data.deviceID, data.wavBuffer, data.wavLength );

@@ -47,7 +47,7 @@ void Player::operator=(const Player& player)
     m_isInverted     = false;
     m_body           = player.m_body;
     m_fixture        = player.m_fixture;
-    m_spawnPoint     = player.m_spawnPoint;
+    m_spawn          = player.m_spawn;
     m_prevPos        = player.m_prevPos;
     m_maxHealth      = player.m_maxHealth;
     m_health         = player.m_health;
@@ -62,18 +62,18 @@ void Player::CreateHitBox(b2World& world, const Json::Value& player)
 {
     GameObject::CreateHitBox(world, player);
 
-    float hx = player["width" ].asFloat() / 2.0f;
-    float hy = player["height"].asFloat() / 2.0f;
+    float hx = 0.5f * player["width"].asFloat();
+    float hy = 0.5f * player["height"].asFloat();
 
-    b2Vec2 vertex1 = b2Vec2(-hx, -hy);
-    b2Vec2 vertex2 = b2Vec2( hx, -hy);
+    b2Vec2 vertex1(-hx, -hy);
+    b2Vec2 vertex2( hx, -hy);
 
 
-    b2EdgeShape shape;
-    shape.SetTwoSided(vertex1, vertex2);
+    b2EdgeShape edge;
+    edge.SetTwoSided(vertex1, vertex2);
 
     b2FixtureDef def;
-    def.shape    = &shape;
+    def.shape    = &edge;
     def.isSensor = true;
 
     m_groundSensor = m_body->CreateFixture(&def);
@@ -165,15 +165,9 @@ void Player::ResetFallDistance()
 
 void Player::Respawn()
 {
-    GAME_2D_ASSERT(m_body && m_fixture);
+    GameObject::Respawn();
 
-    b2Vec2 gravity = m_body->GetWorld()->GetGravity();
-
-    m_body->SetTransform(m_spawnPoint, 0.0f);
-    m_body->SetLinearVelocity( b2Vec2(0.0f, 0.0f) );
-    m_body->ApplyForceToCenter(gravity, true);
-
-    m_prevPos      = m_spawnPoint;
+    m_prevPos      = m_spawn;
     m_health       = m_maxHealth;
     m_fallDistance = 0.0f;
 }

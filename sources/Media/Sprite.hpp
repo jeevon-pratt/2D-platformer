@@ -1,8 +1,8 @@
 #pragma once
 
-#include <box2d/b2_body.h>      // b2Vec2 class
+#include <box2d/b2_math.h>      // b2Vec2 struct
+
 #include <string>               // std::string
-#include <string_view>          // std::string_view
 #include <unordered_map>        // std::unordered_map
 
 #include "Media/Animation.hpp"  // Animation class, Frame class
@@ -21,10 +21,10 @@ namespace Json
  */
 struct SpriteCreateInfo
 {
-    const SDL_Texture* texture        = nullptr;  // The texture of the sprite
-    std::string        dataFilePath   = "";       // The file path for the animation meta data
-    bool               useScreenCoord = false;    // Default coordinate type is screen coordinates
-    float              scrollFactor   = 1.0f;     // Sprite scroll factor for parallax scrolling
+    const SDL_Texture* texture      = nullptr;  // The texture of the sprite
+    std::string        animation    = "";       // The file path for the animation meta data
+    bool               screenCoord  = false;    // Default coordinate type is screen coordinates
+    float              scrollFactor = 1.0f;     // Sprite scroll factor for parallax scrolling
 };
 
 
@@ -46,7 +46,7 @@ public:
     // Loads the texture meta data from a local file
     //
     // Note: This method is also called in the sprite create info constructor
-    void LoadAnimations(std::string_view filepath);
+    void LoadAnimations(const std::string& filepath);
 
     // Returns the current animation frame of the sprite
     const SDL_Rect& GetSourceRect() const;
@@ -70,7 +70,7 @@ public:
     void SetAlphaMod(uint8_t alpha);
 
     // Plays the animation assigned to a string key
-    void PlayAnimation(std::string_view name);
+    void PlayAnimation(const std::string& name);
 
 private:
     // A pointer to the texture of the sprite
@@ -99,7 +99,7 @@ private:
     //
     // Note: For sprites belonging to game objects (with physics bodies), the value
     //       should be false, however, setting the field to true will have no effect.
-    bool m_useScreenCoord;
+    bool m_screenCoord;
 
     // The scroll factor used for parallax scrolling
     //

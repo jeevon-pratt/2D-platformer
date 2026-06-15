@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>           // std::string
-#include <string_view>      // std::string_view
 #include <unordered_map>    // std::unordered_map
 
 struct SDL_Renderer;
@@ -25,10 +24,10 @@ public:
     TextureManager(const Renderer& renderer);
 
     // Loads textures from the specified file path
-    void LoadTexture(std::string_view name, std::string_view filepath);
+    void LoadTexture(const std::string& name, const std::string& filepath);
 
     // Returns the texture with the specified file path
-    const SDL_Texture* Get(std::string_view name) const;
+    const SDL_Texture* Get(const std::string& name) const;
 
     // Destroys all texture data that is loaded by the manager
     ~TextureManager();
