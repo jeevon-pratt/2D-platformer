@@ -3,11 +3,9 @@
 #include <box2d/b2_math.h>  // b2Vec2 class
 
 struct b2Vec2;
-
 struct SDL_Color;
 struct SDL_Renderer;
 struct SDL_Window;
-
 class  GameObject;
 class  Sprite;
 class  UserInterface;
@@ -71,6 +69,9 @@ private:
     //       prevent a copy of the rendering context from being created.
     Renderer(const Renderer&) = delete;
     void operator=(const Renderer&) = delete;
+
+    // Creates the ImGui Context
+    void InitImGui(SDL_Window* window);
 
 private:
     // The internal SDL renderer context responsible for drawing sprites

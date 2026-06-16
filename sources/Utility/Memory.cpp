@@ -19,25 +19,29 @@ static size_t s_totalMemory = 0;
 
 
 #ifdef _MSC_VER
-    _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(size) _VCRT_ALLOCATOR
-    void* __cdecl operator new(size_t size) noexcept(false)
+
+_NODISCARD _Ret_notnull_ _Post_writable_byte_size_(size) _VCRT_ALLOCATOR
+void* __cdecl operator new(size_t size) noexcept(false)
+
 #else
-    void* operator new(size_t size) noexcept(false)
+
+void* operator new(size_t size) noexcept(false)
+
 #endif
-    {
-        void* allocation = malloc(size);
+{
+    void* allocation = malloc(size);
 
-        if (!allocation)
-            throw std::bad_alloc();
+    if (!allocation)
+        throw std::bad_alloc();
 
 
-        s_totalMemory += size;
+    s_totalMemory += size;
 
-        GAME_2D_LOG_VERBOSE("Allocating %u bytes of memory", (unsigned int)size);
-        GAME_2D_LOG_VERBOSE("Total Heap Memory Allocated: %u bytes\n\n", (unsigned int)s_totalMemory);
+    GAME_2D_LOG_VERBOSE("Allocating %u bytes of memory", (unsigned int)size);
+    GAME_2D_LOG_VERBOSE("Total Heap Memory Allocated: %u bytes\n\n", (unsigned int)s_totalMemory);
 
-        return allocation;
-    }
+    return allocation;
+}
 
 
 

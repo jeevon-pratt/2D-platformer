@@ -1,5 +1,3 @@
-#include <SDL2/SDL_ttf.h>   // SDL_ttf functionality
-
 #include <string>           // std::string, std::to_string
 
 #include "Media/Text.hpp"   // FontManager class

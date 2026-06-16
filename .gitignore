@@ -1,0 +1,31 @@
+# Build output
+/build/
+/bin/
+
+# Visual Studio
+/.vs/
+*.sln
+*.sln.lnk
+*.vcxproj*
+*.user
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Code::Blocks
+*.cbp
+*.depend
+*.layout
+*.res
+*.o
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+
+# Local libraries no longer tracked
+/vendor/Box2D/
+/vendor/JsonCpp/
+/vendor/SDL2-w64/

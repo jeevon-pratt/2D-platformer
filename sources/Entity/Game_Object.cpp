@@ -54,9 +54,12 @@ void GameObject::operator=(const GameObject& object)
 
 void GameObject::CreateSprite(const TextureManager& manager, const Json::Value& sprite)
 {
+    const char* texture   = sprite["texture"].asCString();
+    const char* animation = sprite["animation"].asCString();
+
     SpriteCreateInfo info;
-    info.texture      = manager.Get( sprite["texture"].asString() );
-    info.animation    = sprite["animation"].asString();
+    info.texture      = manager.Get(texture);
+    info.animation    = animation;
     info.screenCoord  = false;
     info.scrollFactor = 1.0f;
 
@@ -71,7 +74,6 @@ void GameObject::CreateHitBox(b2World& world, const Json::Value& object)
     float   xPos  = object["position"][0].asFloat();
     float   yPos  = object["position"][1].asFloat();
     uint8_t type  = object["body_type"].asUInt();
-
 
     b2BodyDef bodyDef;
     bodyDef.type          = static_cast<b2BodyType>(type);
@@ -215,6 +217,10 @@ void GameObject::Respawn()
 }
 
 
+
+// ******************
+// INTERNAL FUNCTIONS
+// ******************
 
 void GameObject::CreateFixture(const Json::Value& object)
 {

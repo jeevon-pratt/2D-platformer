@@ -21,7 +21,7 @@ void Level3State::OnHandle(Game2D& app)
 {
     static SDL_Event s_event;
 
-    while (SDL_PollEvent(&s_event))
+    while ( SDL_PollEvent(&s_event) )
     {
         if (s_event.type == SDL_QUIT)
         {
@@ -32,6 +32,7 @@ void Level3State::OnHandle(Game2D& app)
 
         app.m_window.HandleInput(s_event);
         app.m_levelUI.HandleInput(s_event);
+        app.m_perfMonitor.HandleInput(s_event);
     }
 
     app.m_player.GetStateManager().HandleInput();
@@ -56,17 +57,14 @@ void Level3State::OnUpdate(Game2D& app)
 
 void Level3State::OnRender(Game2D& app)
 {
-    static constexpr SDL_Color s_colorOrange{ 255, 117, 24 };
-    static constexpr SDL_Color s_colorRed{ 255, 0, 0 };
+    static constexpr SDL_Color s_colorOrange { 255, 117, 24 };
+    static constexpr SDL_Color s_colorRed { 255, 0, 0 };
 
     b2Vec2 camTransform = app.m_camera.GetTransform();
-    Text frameRateText = app.m_perfMonitor.GetFrameRateText();
-    Text frameTimeText = app.m_perfMonitor.GetFrameTimeText();
 
 
     app.m_renderer.Clear();
     app.m_renderer.DrawGradient(s_colorOrange, s_colorRed, 100.0f);
-
 
     for (const auto& [sprite, pos] : app.m_backgroundLayer)
         app.m_renderer.Render(sprite, pos, camTransform);
@@ -82,11 +80,9 @@ void Level3State::OnRender(Game2D& app)
     for (const auto& [sprite, pos] : app.m_foregroundLayer)
         app.m_renderer.Render(sprite, pos, camTransform);
 
-    app.m_renderer.Render(frameRateText, b2Vec2(10.0f, 0.0f));
-    app.m_renderer.Render(frameTimeText, b2Vec2(10.0f, 35.0f));
-
-
+    app.m_perfMonitor.Render();
     app.m_renderer.Display();
+    
     app.m_perfMonitor.CalculateFrameRate();
 }
 

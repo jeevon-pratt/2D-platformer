@@ -14,14 +14,14 @@
  */
 #ifdef DEBUG
 
-    #define GAME_2D_ASSERT(cnd)          assert(cnd)
-    #define GAME_2D_ASSERT_MSG(cnd, msg) assert(cnd && msg)
+#define GAME_2D_ASSERT(cnd)          assert(cnd)
+#define GAME_2D_ASSERT_MSG(cnd, msg) assert(cnd && msg)
 
 #else
 
-    #define GAME_2D_ASSERT_FALLTHROUGH do {} while (false)
+#define GAME_2D_ASSERT_FALLTHROUGH do {} while (false)
 
-    #define GAME_2D_ASSERT(cnd)          GAME_2D_ASSERT_FALLTHROUGH
-    #define GAME_2D_ASSERT_MSG(cnd, msg) GAME_2D_ASSERT_FALLTHROUGH
+#define GAME_2D_ASSERT(cnd)          GAME_2D_ASSERT_FALLTHROUGH
+#define GAME_2D_ASSERT_MSG(cnd, msg) GAME_2D_ASSERT_FALLTHROUGH
 
 #endif

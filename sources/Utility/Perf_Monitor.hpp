@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Media/Text.hpp"       // Text class
-
-struct _TTF_Font;               // typedef struct _TTF_Font TTF_Font
-struct SDL_Color;
+union SDL_Event;
+class ImGuiContext;
+class Renderer;
 
 
 /**
@@ -15,36 +14,48 @@ public:
     // IMPLEMENTATION
     // ==============
 
-    // The Default Constructor
-    PerfMonitor();
+    // The Constructor
+    PerfMonitor(const Renderer& renderer);
 
     // Sets the time interval on which frame rate display updates
     void SetInterval(uint32_t intervalTime);
 
-    // Sets the font of the frame time and frame rate text
-    void SetTextFont(const _TTF_Font* font);
-
-    // Sets the color of the frame time and frame rate text
-    void SetTextColor(SDL_Color color);
+    // Sets the internal ImGui context as the current context
+    void SetCurrentContext();
 
     // Calculates the current frame time and frame rate
     //
     // Notes: This method should be called once per game loop iteration.
     void CalculateFrameRate();
 
-    // Returns the frame time text object for displaying to the screen
-    //
-    // Note: The 'SetTextFont' and "SetTextColor" methods should be called before
-    //       rendering the text.
-    const Text& GetFrameTimeText() const;
+    // Handles user input for the monitor window
+    void HandleInput(const SDL_Event& event) const;
 
-    // Returns the frame rate text object for displaying to the screen
-    //
-    // Note: The 'SetTextFont' and "SetTextColor" methods should be called before
-    //       rendering the text.
-    const Text& GetFrameRateText() const;
+    // Renders a debugging window with the performance information
+    void Render() const;
+
+    // Destroys the internal ImGui context and SDL backends
+    ~PerfMonitor();
 
 private:
+    // INTERNAL FUNCTIONS
+    // ==================
+
+    // Note: The copy constructor and assignment have been disabled to prevent
+    //       the copying of an ImGui context
+    PerfMonitor(const PerfMonitor&) = delete;
+    void operator=(const PerfMonitor&) = delete;
+
+private:
+    // The internal SDL renderer context responsible for displaying info
+    const SDL_Renderer* m_rendererContext;
+
+    // The internal ImGui context
+    ImGuiContext* m_guiContext;
+
+    // Boolean that determines if ImGui and the SDL backends are initialized
+    bool m_backend;
+
     // This variable holds the start time for the internal timer.
     //
     // Note: This value is set in the 'CalculateFrameRate' method.
@@ -62,13 +73,13 @@ private:
     //       milliseconds (1 second).
     uint32_t m_intervalTime;
 
-    // This text object holds the game frame rate.
+    // The game frame rate.
     //
-    // Note: The frame rate value is calculated in the 'CalculateFrameRate' method.
-    Text m_frameRateText;
+    // Note: The frame rate is calculated in the 'CalculateFrameRate' method.
+    uint32_t m_frameRate;
 
-    // This text object holds the game frame time.
+    // The game frame time.
     //
-    // Note: The frame time value is calculated in the 'CalculateFrameRate' method.
-    Text m_frameTimeText;
+    // Note: The frame time is calculated in the 'CalculateFrameRate' method.
+    uint32_t m_frameTime;
 };

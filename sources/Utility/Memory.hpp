@@ -19,12 +19,12 @@
  // Note: Information is recorded using the debug logging system.
 #ifdef _MSC_VER
 
-    _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(size) _VCRT_ALLOCATOR
-    void* __cdecl operator new(size_t size) noexcept(false);
+_NODISCARD _Ret_notnull_ _Post_writable_byte_size_(size) _VCRT_ALLOCATOR
+void* __cdecl operator new(size_t size) noexcept(false);
 
 #else
 
-    void* operator new(size_t size) noexcept(false); 
+void* operator new(size_t size) noexcept(false); 
 
 #endif
 

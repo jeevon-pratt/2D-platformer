@@ -1,11 +1,10 @@
 #pragma once
 
 #include <SDL2/SDL_pixels.h>    // SDL_Color struct
+#include <SDL2/SDL_ttf.h>       // TTF_Font struct
 
 #include <string>               // std::string
 #include <unordered_map>        // std::unordered_map
-
-struct _TTF_Font;               // typedef struct _TTF_Font TTF_Font
 
 
 /**
@@ -14,7 +13,7 @@ struct _TTF_Font;               // typedef struct _TTF_Font TTF_Font
 struct Text
 {
     std::string      str   = "";             // The text characters
-    const _TTF_Font* font  = nullptr;        // Pointer to text font data
+    const TTF_Font* font   = nullptr;        // Pointer to text font data
     SDL_Color        color = { 0, 0, 0 };    // The text color
 };
 
@@ -37,7 +36,7 @@ public:
     void LoadFont(const std::string& name, const std::string& filepath, uint8_t size);
 
     // Returns the font with the specified name and point size
-    const _TTF_Font* Get(const std::string& name) const;
+    const TTF_Font* Get(const std::string& name) const;
 
     // Frees all font data loaded by the manager
     ~FontManager();
@@ -57,5 +56,5 @@ private:
     //
     // Note: The destructor automatically destroys all loaded textures. This is not
     //       handled by the main game class.
-    std::unordered_map<std::string, const _TTF_Font*> m_fonts;
+    std::unordered_map<std::string, const TTF_Font*> m_fonts;
 };

@@ -4,12 +4,9 @@
 #include <SDL2/SDL_ttf.h>           // TTF_Init and TTF_Quit functions, TTF_Font struct
 #include <json/value.h>             // Json::Value class
 
-#include <array>                    // std::array
-
 #ifndef __GNUC__
-    #include <filesystem>           // std::filesystem
+#include <filesystem>               // std::filesystem
 #endif
-
 #include <print>                    // std::print
 #include <string>                   // std::string
 
@@ -28,9 +25,9 @@
 // ==========
 
 #ifdef DEBUG
-    static constexpr const char* BINARY_DIR = "../../../bin/debug";
+static constexpr const char* BINARY_DIR = "../../../bin/debug";
 #else
-    static constexpr const char* BINARY_DIR = "../../../bin/release";
+static constexpr const char* BINARY_DIR = "../../../bin/release";
 #endif
 
 static constexpr const char* ASSET_CONFIG_FILE_PATH  = "../../internal/asset_config.json";
@@ -66,7 +63,8 @@ Game2D::Game2D():
     m_window         ("2D_PLATFORMER", WINDOW_WIDTH, WINDOW_HEIGHT),
     m_renderer       (m_window),
     m_textureManager (m_renderer),
-    m_physicsWorld   (std::make_unique<b2World>(G_ACCELERATION))
+    m_physicsWorld   ( std::make_unique<b2World>(G_ACCELERATION) ),
+    m_perfMonitor    (m_renderer)
 {
     m_objects.reserve(MAX_OBJECTS);
     m_enemies.reserve(MAX_ENEMIES);
@@ -88,28 +86,28 @@ Game2D::Game2D():
 void Game2D::Init()
 {
     // Set the working directory
-    #ifndef __GNUC__
-        std::filesystem::path CURRENT_FILE = __FILE__;
-        std::filesystem::path WORKING_DIR  = CURRENT_FILE/BINARY_DIR;
+#ifndef __GNUC__
+    std::filesystem::path CURRENT_FILE = __FILE__;
+    std::filesystem::path WORKING_DIR  = CURRENT_FILE/BINARY_DIR;
 
-        std::filesystem::current_path(WORKING_DIR);
-    #endif
+    std::filesystem::current_path(WORKING_DIR);
+#endif
 
 
     // Initialize the log system
-    #ifdef DEBUG
-        if (!InitLog(LOG_FILE_PATH, LOG_PRIORITY_DEBUG))
-            std::print("\aERROR: %s could not be accessed\n", LOG_FILE_PATH);
-    #endif
+#ifdef DEBUG
+    if ( !InitLog(LOG_FILE_PATH, LOG_PRIORITY_DEBUG) )
+        std::print("\aERROR: %s could not be accessed\n", LOG_FILE_PATH);
+#endif
 
 
     // Initialize the save system
-    if (!OpenSaveFile(SAVE_FILE_PATH))
+    if ( !OpenSaveFile(SAVE_FILE_PATH) )
         GAME_2D_LOG_CRITICAL("%s could not be accessed\n\n", SAVE_FILE_PATH);
 
 
     // Initialize the SDL subsystems
-    if (SDL_Init(SDL_FLAGS) < 0 || IMG_Init(IMG_FLAGS) == 0 || TTF_Init() < 0)
+    if ( SDL_Init(SDL_FLAGS) < 0 || IMG_Init(IMG_FLAGS ) == 0 || TTF_Init() < 0)
     {
         GAME_2D_LOG_CRITICAL("%s\n\n", SDL_GetError());
         std::exit(EXIT_FAILURE);

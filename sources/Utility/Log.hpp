@@ -71,51 +71,51 @@ void CloseLogFile();
  */
 #ifdef DEBUG
 
-    // Logs messages with priority SDL_LOG_PRIORITY_VERBOSE
-    #define GAME_2D_LOG_VERBOSE(fmt, ...) \
-        if ( LogFileOpen() ) \
-            SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
+// Logs messages with priority SDL_LOG_PRIORITY_VERBOSE
+#define GAME_2D_LOG_VERBOSE(fmt, ...) \
+    if ( LogFileOpen() ) \
+        SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
 
 
-    // Logs messages with priority SDL_LOG_PRIORITY_DEBUG
-    #define GAME_2D_LOG_DEBUG(fmt, ...) \
-        if ( LogFileOpen() ) \
-            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
+// Logs messages with priority SDL_LOG_PRIORITY_DEBUG
+#define GAME_2D_LOG_DEBUG(fmt, ...) \
+    if ( LogFileOpen() ) \
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
 
 
-    // Logs messages with priority SDL_LOG_PRIORITY_INFO
-    #define GAME_2D_LOG_INFO(fmt, ...) \
-        if ( LogFileOpen() ) \
-            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
+// Logs messages with priority SDL_LOG_PRIORITY_INFO
+#define GAME_2D_LOG_INFO(fmt, ...) \
+    if ( LogFileOpen() ) \
+        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
 
 
-    // Logs messages with priority SDL_LOG_PRIORITY_WARN
-    #define GAME_2D_LOG_WARN(fmt, ...) \
-        if ( LogFileOpen() ) \
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
+// Logs messages with priority SDL_LOG_PRIORITY_WARN
+#define GAME_2D_LOG_WARN(fmt, ...) \
+    if ( LogFileOpen() ) \
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
 
 
-    // Logs messages with priority SDL_LOG_PRIORITY_ERROR
-    #define GAME_2D_LOG_ERROR(fmt, ...) \
-        if ( LogFileOpen() ) \
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
+// Logs messages with priority SDL_LOG_PRIORITY_ERROR
+#define GAME_2D_LOG_ERROR(fmt, ...) \
+    if ( LogFileOpen() ) \
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
 
 
-    // Logs messages with priority SDL_LOG_PRIORITY_CRITICAL
-    #define GAME_2D_LOG_CRITICAL(fmt, ...) \
-        if ( LogFileOpen() ) \
-            SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
+// Logs messages with priority SDL_LOG_PRIORITY_CRITICAL
+#define GAME_2D_LOG_CRITICAL(fmt, ...) \
+    if ( LogFileOpen() ) \
+        SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, fmt, ##__VA_ARGS__)
 
 #else
 
-    #define GAME_2D_LOG_FALLTHROUGH do {} while (false)
+#define GAME_2D_LOG_FALLTHROUGH do {} while (false)
 
-    #define GAME_2D_LOG_VERBOSE(fmt, ...)   GAME_2D_LOG_FALLTHROUGH
-    #define GAME_2D_LOG_INFO(fmt, ...)      GAME_2D_LOG_FALLTHROUGH
-    #define GAME_2D_LOG_DEBUG(fmt, ...)     GAME_2D_LOG_FALLTHROUGH
-    #define GAME_2D_LOG_WARN(fmt, ...)      GAME_2D_LOG_FALLTHROUGH
-    #define GAME_2D_LOG_ERROR(fmt, ...)     GAME_2D_LOG_FALLTHROUGH
-    #define GAME_2D_LOG_CRITICAL(fmt, ...)  GAME_2D_LOG_FALLTHROUGH
+#define GAME_2D_LOG_VERBOSE(fmt, ...)   GAME_2D_LOG_FALLTHROUGH
+#define GAME_2D_LOG_INFO(fmt, ...)      GAME_2D_LOG_FALLTHROUGH
+#define GAME_2D_LOG_DEBUG(fmt, ...)     GAME_2D_LOG_FALLTHROUGH
+#define GAME_2D_LOG_WARN(fmt, ...)      GAME_2D_LOG_FALLTHROUGH
+#define GAME_2D_LOG_ERROR(fmt, ...)     GAME_2D_LOG_FALLTHROUGH
+#define GAME_2D_LOG_CRITICAL(fmt, ...)  GAME_2D_LOG_FALLTHROUGH
 
 #endif
 

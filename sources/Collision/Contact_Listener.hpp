@@ -5,8 +5,7 @@
 class  b2Contact;
 class  b2Fixture;
 struct b2Manifold;
-
-class Player;
+class  Player;
 
 
 /**
