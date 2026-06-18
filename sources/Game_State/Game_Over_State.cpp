@@ -1,4 +1,4 @@
-#include <SDL2/SDL_timer.h>             // SDL_GetTicks function
+#include <SDL3/SDL_timer.h>             // SDL_GetTicks function
 
 #include "Core/Game_2D.hpp"             // Game2D class
 #include "Game_State/Game_State.hpp"    // Game state classes and enum

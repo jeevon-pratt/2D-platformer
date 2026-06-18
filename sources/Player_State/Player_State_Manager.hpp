@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>                               // std::unique_ptr
-#include <stack>                                // std::stack
-#include <unordered_map>                        // std::unordered_map
+#include <memory>                           // std::unique_ptr
+#include <stack>                            // std::stack
+#include <unordered_map>                    // std::unordered_map
 
-#include "Player_State/Player_State.hpp"        // Player state classes and enum
+#include "Player_State/Player_State.hpp"    // Player state classes and enum
 
 
 /**

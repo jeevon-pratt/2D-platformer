@@ -1,4 +1,4 @@
-#include <SDL2/SDL_timer.h>     // SDL_GetTicks function
+#include <SDL3/SDL_timer.h>     // SDL_GetTicks function
 
 #include "Media/Audio.hpp"      // AudioManager class
 #include "Utility/Log.hpp"      // GAME_2D_LOG_ERROR macro function
@@ -18,8 +18,12 @@ static constexpr uint8_t MAX_AUDIO_FILES = 20;
 // IMPLEMENTATION
 // **************
 
-AudioManager::AudioManager()
+AudioManager::AudioManager():
+    m_deviceID ( SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr) )
 {
+    if (!m_deviceID)
+        GAME_2D_LOG_ERROR("%s\n\n", SDL_GetError());
+
     m_data.reserve(MAX_AUDIO_FILES);
 }
 
@@ -30,11 +34,36 @@ void AudioManager::LoadAudio(const std::string& name, const std::string& filepat
     GAME_2D_LOG_DEBUG("Loading audio: %s\n\n", filepath.data());
 
 
-    AudioData& data = m_data[name];
+    AudioData data;
 
     if ( !SDL_LoadWAV(filepath.data(), &data.wavSpec, &data.wavBuffer, &data.wavLength) )
     {
+        GAME_2D_LOG_ERROR("Could not load audio, %s\n\n", SDL_GetError());
+        return;
+    }
+
+
+    data.stream = SDL_CreateAudioStream(&data.wavSpec, &data.wavSpec);
+
+    if (!data.stream)
+    {
         GAME_2D_LOG_ERROR("%s\n\n", SDL_GetError());
+
+        SDL_free(data.wavBuffer);
+
+        data.wavBuffer = nullptr;
+        return;
+    }
+
+    if ( !SDL_BindAudioStream(m_deviceID, data.stream) )
+    {
+        GAME_2D_LOG_ERROR("%s\n\n", SDL_GetError());
+
+        SDL_DestroyAudioStream(data.stream);
+        SDL_free(data.wavBuffer);
+
+        data.stream    = nullptr;
+        data.wavBuffer = nullptr;
         return;
     }
 
@@ -44,11 +73,10 @@ void AudioManager::LoadAudio(const std::string& name, const std::string& filepat
     uint32_t sampleRate = data.wavSpec.freq;                            // (in samples/sec)
     uint32_t sampleSize = SDL_AUDIO_BITSIZE(data.wavSpec.format) / 8;   // (in bytes/sample)
 
-    data.deviceID  = SDL_OpenAudioDevice(nullptr, 0, &data.wavSpec, nullptr, 0);
     data.duration  = RoundToInt<uint32_t>( 1000.0f * fileSize / (channels * sampleRate * sampleSize) );
     data.isPlaying = false;
 
-    SDL_QueueAudio(data.deviceID, data.wavBuffer, data.wavLength);
+    m_data.emplace(name, data);
 }
 
 
@@ -64,10 +92,17 @@ void AudioManager::PlayAudio(const std::string& name, bool loop)
 
     AudioData& data = m_data[name];
 
+    if (!data.stream || !data.wavBuffer)
+        return;
+
+
     if (!data.isPlaying)
     {
+        SDL_ClearAudioStream(data.stream);
+        SDL_PutAudioStreamData(data.stream, data.wavBuffer, data.wavLength);
+
         // To initiate the playing of the audio file
-        SDL_PauseAudioDevice(data.deviceID, 0);
+        SDL_ResumeAudioDevice(m_deviceID);
 
         data.startTime = SDL_GetTicks();
         data.isPlaying = true;
@@ -80,14 +115,16 @@ void AudioManager::PlayAudio(const std::string& name, bool loop)
     {
         if (!loop)
         {
-            data.isPlaying = false;
+            SDL_PauseAudioDevice(m_deviceID);
 
+            data.isPlaying = false;
             return;
         }
 
         // Replay file from the beginning
-        ResetAudio(name);
-        SDL_PauseAudioDevice(data.deviceID, 0);
+        SDL_ClearAudioStream(data.stream);
+        SDL_PutAudioStreamData(data.stream, data.wavBuffer, data.wavLength);
+        SDL_ResumeAudioDevice(m_deviceID);
 
         data.startTime = SDL_GetTicks();
     }
@@ -106,10 +143,10 @@ void AudioManager::PauseAudio(const std::string& name)
 
     AudioData& data = m_data[name];
 
-    // Stops the playing of the audio file
     if (data.isPlaying)
     {
-        SDL_PauseAudioDevice(data.deviceID, 1);
+        // Stops the playing of the audio file
+        SDL_PauseAudioDevice(m_deviceID);
 
         data.isPlaying = false;
     }
@@ -128,8 +165,13 @@ void AudioManager::ResetAudio(const std::string& name)
 
     AudioData& data = m_data[name];
 
-    SDL_ClearQueuedAudio(data.deviceID);
-    SDL_QueueAudio( data.deviceID, data.wavBuffer, data.wavLength );
+    if (!data.stream || !data.wavBuffer)
+        return;
+
+    SDL_ClearAudioStream(data.stream);
+    SDL_PutAudioStreamData(data.stream, data.wavBuffer, data.wavLength );
+
+    data.startTime = SDL_GetTicks();
 }
 
 
@@ -140,7 +182,9 @@ AudioManager::~AudioManager()
     {
         GAME_2D_LOG_DEBUG("Destroying audio: %s\n\n", name.data());
 
-        SDL_CloseAudioDevice(data.deviceID);
-        SDL_FreeWAV(data.wavBuffer);
+        SDL_DestroyAudioStream(data.stream);
+        SDL_free(data.wavBuffer);
     }
+
+    SDL_CloseAudioDevice(m_deviceID);
 }

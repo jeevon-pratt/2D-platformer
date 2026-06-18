@@ -1,7 +1,7 @@
 #pragma once
 
-#include <SDL2/SDL_pixels.h>    // SDL_Color struct
-#include <SDL2/SDL_ttf.h>       // TTF_Font struct
+#include <SDL3/SDL_pixels.h>    // SDL_Color struct
+#include <SDL3_ttf/SDL_ttf.h>   // TTF_Font struct
 
 #include <string>               // std::string
 #include <unordered_map>        // std::unordered_map

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <SDL2/SDL_rect.h>  // SDL_Rect struct
+#include <SDL3/SDL_rect.h>    // SDL_FRect struct
 
-#include <vector>           // std::vector
+#include <vector>             // std::vector
 
 
 /**
@@ -10,7 +10,7 @@
  */
 struct Frame
 {
-    SDL_Rect srcrect;   // The source SDL_Rect structure of the frame image
+    SDL_FRect srcrect;  // The source SDL_Rect structure of the frame image
     uint8_t  duration;  // The duration of the frame's appearance in milliseconds
 };
 

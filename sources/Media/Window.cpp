@@ -1,9 +1,9 @@
-#include <SDL2/SDL_error.h>         // SDL_GetError function
-#include <SDL2/SDL_events.h>        // SDL_Event union
-#include <SDL2/SDL_messagebox.h>    // SDL_ShowSimpleMessageBox function
-#include <SDL2/SDL_mouse.h>         // SDL_ShowCursor function
-#include <SDL2/SDL_render.h>        // SDL renderer functionality
-#include <SDL2/SDL_video.h>         // SDL window functionality
+#include <SDL3/SDL_error.h>         // SDL_GetError function
+#include <SDL3/SDL_events.h>        // SDL_Event union
+#include <SDL3/SDL_messagebox.h>    // SDL_ShowSimpleMessageBox function
+#include <SDL3/SDL_mouse.h>         // SDL_ShowCursor and SDL_HideCursor functions
+#include <SDL3/SDL_render.h>        // SDL renderer functionality
+#include <SDL3/SDL_video.h>         // SDL window functionality
 
 #include <cstdlib>                  // std::exit, EXIT_FAILURE
 #include <string_view>              // const std::string&
@@ -12,22 +12,12 @@
 #include "Utility/Log.hpp"          // GAME_2D_LOG_CRITICAL macro function
 
 
-// ******************
-// SYMBOLIC CONSTANTS
-// ******************
-
-static constexpr uint32_t WINDOW_X   = SDL_WINDOWPOS_CENTERED;
-static constexpr uint32_t WINDOW_Y   = SDL_WINDOWPOS_CENTERED;
-static constexpr uint32_t INIT_FLAGS = SDL_WINDOW_SHOWN | SDL_WINDOW_ALWAYS_ON_TOP;
-
-
-
 // **************
 // IMPLEMENTATION
 // **************
 
 Window::Window(const std::string& title, uint16_t width, uint16_t height):
-    m_windowContext ( SDL_CreateWindow(title.data(), WINDOW_X, WINDOW_Y, width, height, INIT_FLAGS) )
+    m_windowContext ( SDL_CreateWindow(title.data(), width, height, SDL_WINDOW_ALWAYS_ON_TOP) )
 {
     if (!m_windowContext)
     {
@@ -69,7 +59,7 @@ uint16_t Window::GetHeight() const
 
 void Window::HandleInput(const SDL_Event& event) const
 {
-    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_F11)
+    if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_F11)
     {
         bool isFullscreen = SDL_GetWindowFlags(m_windowContext) & SDL_WINDOW_FULLSCREEN;
 
@@ -103,14 +93,12 @@ Window::~Window()
 
 void Window::ShowCursor()
 {
-    if (SDL_ShowCursor(SDL_QUERY) == SDL_DISABLE)
-        SDL_ShowCursor(SDL_ENABLE);
+    SDL_ShowCursor();
 }
 
 
 
 void Window::HideCursor()
 {
-    if (SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE)
-        SDL_ShowCursor(SDL_DISABLE);
+    SDL_HideCursor();
 }

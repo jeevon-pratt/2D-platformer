@@ -1,0 +1,25 @@
+{
+    "name": "2d-platformer",
+
+    "builtin-baseline": "58613d018f126ccaa9dac9a02b11142cb0f4f4ea",
+    
+    "dependencies": 
+    [
+        "sdl3",
+        {
+            "name": "sdl3-image",
+            "features": ["png", "jpeg"]
+        },
+        "sdl3-ttf",
+        "box2d",
+        "jsoncpp"
+    ],
+
+    "overrides":
+    [
+        {
+            "name": "box2d",
+            "version": "2.4.1"
+        }
+    ]
+}

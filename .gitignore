@@ -24,8 +24,3 @@
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
-
-# Local libraries no longer tracked
-/vendor/Box2D/
-/vendor/JsonCpp/
-/vendor/SDL2-w64/

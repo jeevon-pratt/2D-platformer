@@ -1,5 +1,5 @@
 #include <json/value.h>         // Json::Value class
-#include <SDL2/SDL_render.h>    // SDL_SetTextureAlphaMod function
+#include <SDL3/SDL_render.h>    // SDL_SetTextureAlphaMod function
 
 #include "Media/Sprite.hpp"     // Sprite class
 #include "Utility/Log.hpp"      // GAME_2D_LOG_ERROR macro function
@@ -51,15 +51,15 @@ void Sprite::LoadAnimations(const std::string& filepath)
     // To store the data for every individual sprite frame
     for (const Json::Value& frame : root["frames"])
     {
-        SDL_Rect srcrect;
-        srcrect.x = frame["frame"]["x"].asInt();
-        srcrect.y = frame["frame"]["y"].asInt();
-        srcrect.w = frame["frame"]["w"].asInt();
-        srcrect.h = frame["frame"]["h"].asInt();
+        SDL_FRect srcrect;
+        srcrect.x = frame["frame"]["x"].asFloat();
+        srcrect.y = frame["frame"]["y"].asFloat();
+        srcrect.w = frame["frame"]["w"].asFloat();
+        srcrect.h = frame["frame"]["h"].asFloat();
  
         uint8_t duration = frame["duration"].asUInt();
 
-        frames.emplace_back( Frame{ srcrect, duration } );
+        frames.emplace_back( Frame{srcrect, duration} );
     }
 
 
@@ -86,7 +86,7 @@ void Sprite::LoadAnimations(const std::string& filepath)
 
 
 
-const SDL_Rect& Sprite::GetSourceRect() const
+const SDL_FRect& Sprite::GetSourceRect() const
 {
     return m_currentFrame.srcrect;
 }
@@ -100,14 +100,14 @@ const SDL_Texture* Sprite::GetTexture() const
 
 
 
-uint16_t Sprite::GetFrameWidth() const
+float Sprite::GetFrameWidth() const
 {
     return m_currentFrame.srcrect.w;
 }
 
 
 
-uint16_t Sprite::GetFrameHeight() const
+float Sprite::GetFrameHeight() const
 {
     return m_currentFrame.srcrect.h;
 }

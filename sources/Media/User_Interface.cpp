@@ -1,5 +1,5 @@
-#include <SDL2/SDL_events.h>            // SDL_Event union
-#include <SDL2/SDL_mouse.h>             // SDL_GetMouseState function
+#include <SDL3/SDL_events.h>            // SDL_Event union
+#include <SDL3/SDL_mouse.h>             // SDL_GetMouseState function
 
 #include "Media/User_Interface.hpp"     // UserInterface class
 
@@ -67,8 +67,8 @@ void UserInterface::AddButton(const std::string& name, const Sprite& image, b2Ve
 
 void UserInterface::HandleInput(const SDL_Event& event)
 {
-    int mouseX;
-    int mouseY;
+    float mouseX;
+    float mouseY;
 
     SDL_GetMouseState(&mouseX, &mouseY);
 

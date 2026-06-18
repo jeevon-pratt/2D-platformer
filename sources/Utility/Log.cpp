@@ -1,5 +1,5 @@
-#include <SDL2/SDL_log.h>       // SDL_LogSetOutputFunction and SDL_LogSetPriority functions
-#include <SDL2/SDL_timer.h>     // SDL_GetTicks function
+#include <SDL3/SDL_log.h>       // SDL_SetLogOutputFunction and SDL_SetLogPriority functions
+#include <SDL3/SDL_timer.h>     // SDL_GetTicks function
 
 #include <fstream>              // std::ofstream
 #include <iostream>             // std::cerr
@@ -19,8 +19,8 @@ static std::ofstream s_logFile;
 
 bool InitLog(const std::string& filepath, LOG_PRIORITY priority)
 {
-    SDL_LogSetOutputFunction(LogToFile, nullptr);
-    SDL_LogSetPriority( SDL_LOG_CATEGORY_APPLICATION, static_cast<SDL_LogPriority>(priority) );
+    SDL_SetLogOutputFunction(LogToFile, nullptr);
+    SDL_SetLogPriority( SDL_LOG_CATEGORY_APPLICATION, static_cast<SDL_LogPriority>(priority) );
 
 
     // To create the log file if it does not exist and clear the contents if it does
@@ -49,6 +49,12 @@ void LogToFile(void* userdata, int category, SDL_LogPriority priority, const cha
 
     switch (priority)
     {
+    case SDL_LOG_PRIORITY_INVALID:
+        s_logFile << "INVALID: ";
+        break;
+    case SDL_LOG_PRIORITY_TRACE:
+        s_logFile << "TRACE: ";
+        break;
     case SDL_LOG_PRIORITY_VERBOSE:
         s_logFile << "VERBOSE: ";
         break;

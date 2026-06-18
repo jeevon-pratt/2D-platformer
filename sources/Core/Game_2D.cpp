@@ -1,7 +1,6 @@
 #include <box2d/box2d.h>            // Box2D functionality
-#include <SDL2/SDL.h>               // SDL functionality
-#include <SDL2/SDL_image.h>         // IMG_GetError and IMG_Quit functions
-#include <SDL2/SDL_ttf.h>           // TTF_Init and TTF_Quit functions, TTF_Font struct
+#include <SDL3/SDL.h>               // SDL functionality
+#include <SDL3_ttf/SDL_ttf.h>       // TTF_Init and TTF_Quit functions, TTF_Font struct
 #include <json/value.h>             // Json::Value class
 
 #ifndef __GNUC__
@@ -25,22 +24,15 @@
 // ==========
 
 #ifdef DEBUG
-static constexpr const char* BINARY_DIR = "../../../bin/debug";
+static constexpr const char* BINARY_DIR     = "../../../bin/debug";
 #else
-static constexpr const char* BINARY_DIR = "../../../bin/release";
+static constexpr const char* BINARY_DIR     = "../../../bin/release";
 #endif
 
-static constexpr const char* ASSET_CONFIG_FILE_PATH  = "../../internal/asset_config.json";
-static constexpr const char* OBJECT_CONFIG_FILE_PATH = "../../internal/object_config.json";
-static constexpr const char* LOG_FILE_PATH           = "../../internal/log.txt";
-static constexpr const char* SAVE_FILE_PATH          = "../../internal/save.json";
-
-
-// Initialization Flags
-// ====================
-
-static constexpr uint16_t SDL_FLAGS = SDL_INIT_VIDEO | SDL_INIT_AUDIO;
-static constexpr uint16_t IMG_FLAGS = IMG_INIT_PNG | IMG_INIT_JPG;
+static constexpr const char* ASSET_CONFIG   = "../../internal/asset_config.json";
+static constexpr const char* OBJECT_CONFIG  = "../../internal/object_config.json";
+static constexpr const char* LOG_FILE_PATH  = "../../internal/log.txt";
+static constexpr const char* SAVE_FILE_PATH = "../../internal/save.json";
 
 
 // Game Constants
@@ -51,7 +43,7 @@ static constexpr uint16_t   WINDOW_HEIGHT     = 800;
 static constexpr uint8_t    MAX_OBJECTS       = 23;
 static constexpr uint8_t    MAX_ENEMIES       = 50;
 static constexpr uint8_t    MAX_LAYER_SPRITES = 100;
-static const     b2Vec2     G_ACCELERATION    = b2Vec2(0.0f, -9.81f);
+static const     b2Vec2     GRAVITY           = b2Vec2(0.0f, -9.81f);
 
 
 
@@ -63,7 +55,7 @@ Game2D::Game2D():
     m_window         ("2D_PLATFORMER", WINDOW_WIDTH, WINDOW_HEIGHT),
     m_renderer       (m_window),
     m_textureManager (m_renderer),
-    m_physicsWorld   ( std::make_unique<b2World>(G_ACCELERATION) ),
+    m_physicsWorld   ( std::make_unique<b2World>(GRAVITY) ),
     m_perfMonitor    (m_renderer)
 {
     m_objects.reserve(MAX_OBJECTS);
@@ -107,7 +99,7 @@ void Game2D::Init()
 
 
     // Initialize the SDL subsystems
-    if ( SDL_Init(SDL_FLAGS) < 0 || IMG_Init(IMG_FLAGS ) == 0 || TTF_Init() < 0)
+    if ( !SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) || !TTF_Init() )
     {
         GAME_2D_LOG_CRITICAL("%s\n\n", SDL_GetError());
         std::exit(EXIT_FAILURE);
@@ -127,14 +119,13 @@ void Game2D::Run()
 
 void Game2D::CleanUp()
 {
-    IMG_Quit();
     TTF_Quit();
     SDL_Quit();
     CloseSaveFile();
 
-    #ifdef DEBUG
-        CloseLogFile();
-    #endif
+#ifdef DEBUG
+    CloseLogFile();
+#endif
 }
 
 
@@ -178,7 +169,7 @@ void Game2D::RunInternal()
 
 void Game2D::LoadAssets()
 {
-    Json::Value assets = LoadJson(ASSET_CONFIG_FILE_PATH);
+    Json::Value assets = LoadJson(ASSET_CONFIG);
 
 
     // Loading Audio
@@ -409,7 +400,7 @@ void Game2D::CreateLevelUI()
 
 void Game2D::CreateObjects()
 {
-    Json::Value root = LoadJson(OBJECT_CONFIG_FILE_PATH);
+    Json::Value root = LoadJson(OBJECT_CONFIG);
 
 
     // Player

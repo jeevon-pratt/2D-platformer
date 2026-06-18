@@ -1,5 +1,5 @@
 #include <box2d/box2d.h>                // Box2D functionality
-#include <SDL2/SDL_pixels.h>            // SDL_Color struct
+#include <SDL3/SDL_pixels.h>            // SDL_Color struct
 
 #include "Core/Game_2D.hpp"             // Game2D class
 #include "Game_State/Game_State.hpp"    // Game state classes and enum
@@ -23,7 +23,7 @@ void Level4State::OnHandle(Game2D& app)
 
     while ( SDL_PollEvent(&s_event) )
     {
-        if (s_event.type == SDL_QUIT)
+        if (s_event.type == SDL_EVENT_QUIT)
         {
             app.m_stateManager.PopState();
             app.m_stateManager.PushState(GAME_OVER_STATE);

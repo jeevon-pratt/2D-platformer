@@ -8,7 +8,7 @@
 #include "Media/Animation.hpp"  // Animation class, Frame class
 
 struct SDL_Texture;
-struct SDL_Rect;
+struct SDL_FRect;
 
 namespace Json
 {
@@ -49,16 +49,16 @@ public:
     void LoadAnimations(const std::string& filepath);
 
     // Returns the current animation frame of the sprite
-    const SDL_Rect& GetSourceRect() const;
+    const SDL_FRect& GetSourceRect() const;
 
     // Returns texture of the sprite
     const SDL_Texture* GetTexture() const;
 
     // Returns sprite frame width in pixels
-    uint16_t GetFrameWidth() const;
+    float GetFrameWidth() const;
 
     // Returns sprite frame height in pixels
-    uint16_t GetFrameHeight() const;
+    float GetFrameHeight() const;
 
     // Returns the coordinate type of the Sprite
     bool UseScreenCoord() const;

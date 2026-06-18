@@ -1,5 +1,5 @@
-#include <SDL2/SDL_render.h>            // SDL_Renderer struct, SDL_DestroyTexture function
-#include <SDL2/SDL_image.h>             // IMG_GetError and IMG_LoadTexture functions
+#include <SDL3/SDL_render.h>            // SDL_Renderer struct, SDL_DestroyTexture function
+#include <SDL3_image/SDL_image.h>       // IMG_LoadTexture functions
 
 #include "Media/Texture_Manager.hpp"    // TextureManager class
 #include "Media/Renderer.hpp"           // Renderer class
@@ -36,7 +36,7 @@ void TextureManager::LoadTexture(const std::string& name, const std::string& fil
 
     if (!texture)
     {
-        GAME_2D_LOG_ERROR("%s\n\n", IMG_GetError());
+        GAME_2D_LOG_ERROR("Could not load texture, %s\n\n", SDL_GetError());
         return;
     }
 

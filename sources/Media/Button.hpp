@@ -22,10 +22,10 @@ public:
     Button() = default;
 
     // Determines if the mouse is currently hovering over the button
-    bool IsActive(uint16_t mouseX, uint16_t mouseY) const;
+    bool IsActive(float mouseX, float mouseY) const;
 
     // Determines if the button has been clicked
-    bool IsClicked(uint16_t mouseX, uint16_t mouseY, const SDL_Event& event) const;
+    bool IsClicked(float mouseX, float mouseY, const SDL_Event& event) const;
 
 public:
     // The name of the button

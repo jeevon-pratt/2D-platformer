@@ -6,7 +6,7 @@
 #include <box2d/b2_world.h>             // b2World class
 #include <json/value.h>                 // Json:::Value class
 
-#include <cmath>                        // M_PI constant
+#include <numbers>                      // std::numbers:pi constant
 #include <vector>                       // std::vector
 
 #include "Entity/Game_Object.hpp"       // GameObject class
@@ -79,7 +79,7 @@ void GameObject::CreateHitBox(b2World& world, const Json::Value& object)
     bodyDef.type          = static_cast<b2BodyType>(type);
     bodyDef.fixedRotation = object["fixed_rotation"].asBool();
     bodyDef.position      = b2Vec2(xPos, yPos);
-    bodyDef.angle         = angle * static_cast<float>(M_PI / 180.0);
+    bodyDef.angle         = angle * static_cast<float>(std::numbers::pi / 180.0);
 
     m_body  = world.CreateBody(&bodyDef);
     m_spawn = b2Vec2(xPos, yPos);

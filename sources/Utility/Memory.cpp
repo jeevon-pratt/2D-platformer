@@ -1,6 +1,9 @@
-#include <json/json.h>         // JsonCpp functionality
+#include <json/reader.h>        // Json::parseFromStream function, Json::CharReaderBuilder class
+#include <json/value.h>         // Json::Value class
+#include <json/writer.h>        // Json::StreamWriter, Json::StreamWriterBuilder class
 
 #include <fstream>              // std::ifstream, std::ofstream
+#include <memory>               // std::unique_ptr
 #include <new>                  // std::bad_alloc
 #include <stdlib.h>             // malloc and free functions
 #include <string>               // std::string
@@ -19,14 +22,10 @@ static size_t s_totalMemory = 0;
 
 
 #ifdef _MSC_VER
-
 _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(size) _VCRT_ALLOCATOR
 void* __cdecl operator new(size_t size) noexcept(false)
-
 #else
-
 void* operator new(size_t size) noexcept(false)
-
 #endif
 {
     void* allocation = malloc(size);
@@ -64,8 +63,6 @@ Json::Value LoadJson(const std::string& filepath)
     Json::Value             root;
     Json::String            error;
 
-    builder["collectComments"] = false;
-
     s_fileIn.open(filepath);
 
 
@@ -98,6 +95,9 @@ void OverWriteJson(const std::string& filepath, Json::Value& root)
 
 
     Json::StreamWriterBuilder builder;
-    s_fileOut << Json::writeString(builder, root);
+    std::unique_ptr<Json::StreamWriter> writer( builder.newStreamWriter() );
+    
+    writer->write(root, &s_fileOut);
+    s_fileOut.close();
 }
 

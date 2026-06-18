@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL2/SDL_Log.h>     // SDL logging functions
+#include <SDL3/SDL_Log.h>     // SDL logging functions
 
 #include <string>             // std::string
 
@@ -11,7 +11,9 @@
 
 enum LOG_PRIORITY
 {
-    LOG_PRIORITY_VERBOSE = 1,
+    LOG_PRIORITY_INVALID = 0,
+    LOG_PRIORITY_TRACE,
+    LOG_PRIORITY_VERBOSE,
     LOG_PRIORITY_DEBUG,
     LOG_PRIORITY_INFO,
     LOG_PRIORITY_WARN,

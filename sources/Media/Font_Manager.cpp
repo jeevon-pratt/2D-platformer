@@ -18,7 +18,7 @@ void FontManager::LoadFont(const std::string& name, const std::string& filepath,
 
     if (!font)
     {
-        GAME_2D_LOG_ERROR("%s\n\n", TTF_GetError());
+        GAME_2D_LOG_ERROR("Could not load font, %s\n\n", SDL_GetError());
         return;
     }
 

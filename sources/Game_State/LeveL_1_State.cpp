@@ -1,7 +1,7 @@
 #include <box2d/box2d.h>                // Box2D functionality
-#include <SDL2/SDL_events.h>            // SDL_PollEvent function
-#include <SDL2/SDL_pixels.h>            // SDL_Color struct
-#include <SDL2/SDL_ttf.h>               // TTF_Font struct
+#include <SDL3/SDL_events.h>            // SDL_PollEvent function
+#include <SDL3/SDL_pixels.h>            // SDL_Color struct
+#include <SDL3_ttf/SDL_ttf.h>           // TTF_Font struct
 
 #include <iostream>                     // std::cout
 #include <utility>                      // std::pair
@@ -31,7 +31,7 @@ void Level1State::OnHandle(Game2D& app)
 
     while ( SDL_PollEvent(&s_event) )
     {
-        if (s_event.type == SDL_QUIT)
+        if (s_event.type == SDL_EVENT_QUIT)
         {
             app.m_stateManager.PopState();
             app.m_stateManager.PushState(GAME_OVER_STATE);

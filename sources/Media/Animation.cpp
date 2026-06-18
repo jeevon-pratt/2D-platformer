@@ -1,6 +1,6 @@
-#include <SDL2/SDL_timer.h>     // SDL_GetTicks function
+#include <SDL3/SDL_timer.h>       // SDL_GetTicks function
 
-#include "Media/Animation.hpp"  // Animation class and Frame class
+#include "Media/Animation.hpp"    // Animation class and Frame class
 
 
 // ******************

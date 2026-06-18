@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL2/SDL_audio.h>     // SDL_AudioDeviceID typedef and SDL_AudioSpec struct
+#include <SDL3/SDL_audio.h>     // SDL_AudioStream, SDL_AudioSpec, SDL_AudioDeviceID
 
 #include <string>               // std::string
 #include <unordered_map>        // std::unordered_map
@@ -11,13 +11,13 @@
  */
 struct AudioData
 {
-    SDL_AudioDeviceID deviceID;     // Audio device ID
-    SDL_AudioSpec     wavSpec;      // Audio device properties
-    uint8_t*          wavBuffer;    // A pointer to the audio data buffer
-    uint32_t          wavLength;    // Length of audio data buffer in bytes
-    uint32_t          startTime;    // Variable that manages playing duration of audio
-    uint32_t          duration;     // Audio file duration in milliseconds
-    bool              isPlaying;    // Indicates if audio file is currently playing
+    SDL_AudioStream* stream;       // A pointer to the audio stream
+    SDL_AudioSpec    wavSpec;      // Audio device properties
+    uint8_t*         wavBuffer;    // A pointer to the audio data buffer
+    uint32_t         wavLength;    // Length of audio data buffer in bytes
+    uint32_t         startTime;    // Variable that manages playing duration of audio
+    uint32_t         duration;     // Audio file duration in milliseconds
+    bool             isPlaying;    // Indicates if audio file is currently playing
 };
 
 
@@ -65,6 +65,9 @@ private:
     void operator=(const AudioManager& manager) = delete;
 
 private:
+    // The playback device ID
+    SDL_AudioDeviceID m_deviceID;
+
     // Hash table that maps all the loaded audio data to a string name
     //
     // Note: The destructor automatically destroys all loaded audio data. This is

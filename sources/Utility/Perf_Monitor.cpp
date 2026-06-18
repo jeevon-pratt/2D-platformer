@@ -1,10 +1,10 @@
-#include <SDL2/SDL_events.h>            // SDL_Event union
-#include <SDL2/SDL_render.h>            // SDL_Renderer class, SDL_RenderGetWindow function
-#include <SDL2/SDL_timer.h>             // SDL_GetTicks function
+#include <SDL3/SDL_events.h>            // SDL_Event union
+#include <SDL3/SDL_render.h>            // SDL_Renderer class, SDL_GetRenderWindow function
+#include <SDL3/SDL_timer.h>             // SDL_GetTicks function
 
 #include "imgui.h"                      // ImGui functionality
-#include "imgui_impl_sdl2.h"            // ImGui_ImplSDL2 functionality
-#include "imgui_impl_sdlrenderer2.h"    // ImGui_ImplSDLRenderer2 functionality
+#include "imgui_impl_sdl3.h"            // ImGui_ImplSDL3 functionality
+#include "imgui_impl_sdlrenderer3.h"    // ImGui_ImplSDLRenderer3 functionality
 
 #include "Media/Renderer.hpp"           // Renderer class
 #include "Utility/Log.hpp"              // GAME_2D_LOG_ERROR macro function
@@ -43,15 +43,15 @@ PerfMonitor::PerfMonitor(const Renderer& renderer):
     ImGui::GetIO().FontGlobalScale = 2.0f;
 
 
-    // Initialization of SDL2 Backend
+    // Initialization of SDL3 Backend
     // ===============================
 
     SDL_Renderer* rendererContext = const_cast<SDL_Renderer*>( renderer.GetContext() );
-    SDL_Window*   windowContext   = SDL_RenderGetWindow(rendererContext);
+    SDL_Window*   windowContext   = SDL_GetRenderWindow(rendererContext);
 
-    if ( !ImGui_ImplSDL2_InitForSDLRenderer(windowContext, rendererContext) )
+    if ( !ImGui_ImplSDL3_InitForSDLRenderer(windowContext, rendererContext) )
     {
-        GAME_2D_LOG_ERROR("Failed to initialize ImGui SDL2 backend\n\n");
+        GAME_2D_LOG_ERROR("Failed to initialize ImGui SDL3 backend\n\n");
         ImGui::DestroyContext(m_guiContext);
 
         m_guiContext = nullptr;
@@ -59,14 +59,14 @@ PerfMonitor::PerfMonitor(const Renderer& renderer):
     }
 
 
-    // Initialization of SDL2 Renderer Backend
+    // Initialization of SDL3 Renderer Backend
     // =======================================
 
-    if ( !ImGui_ImplSDLRenderer2_Init(rendererContext) )
+    if ( !ImGui_ImplSDLRenderer3_Init(rendererContext) )
     {
-        GAME_2D_LOG_ERROR("Failed to initialize ImGui SDL2 Renderer backend\n\n");
+        GAME_2D_LOG_ERROR("Failed to initialize ImGui SDL3 Renderer backend\n\n");
         
-        ImGui_ImplSDL2_Shutdown();
+        ImGui_ImplSDL3_Shutdown();
         ImGui::DestroyContext(m_guiContext);
 
         m_guiContext = nullptr;
@@ -116,16 +116,13 @@ void PerfMonitor::CalculateFrameRate()
 
 
 
-
-
 void PerfMonitor::HandleInput(const SDL_Event& event) const
 {
     if (!m_backend)
         return;
 
-    ImGui_ImplSDL2_ProcessEvent(&event);
+    ImGui_ImplSDL3_ProcessEvent(&event);
 }
-
 
 
 
@@ -136,8 +133,8 @@ void PerfMonitor::Render() const
 
     SDL_Renderer* rendererContext = const_cast<SDL_Renderer*>(m_rendererContext);
 
-    ImGui_ImplSDLRenderer2_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
+    ImGui_ImplSDLRenderer3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
 
     ImGui::Begin("Performance Monitor");
@@ -146,7 +143,7 @@ void PerfMonitor::Render() const
     ImGui::End();
 
     ImGui::Render();
-    ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), rendererContext);
+    ImGui_ImplSDLRenderer3_RenderDrawData( ImGui::GetDrawData(), rendererContext );
 }
 
 
@@ -160,8 +157,8 @@ PerfMonitor::~PerfMonitor()
 
     if (m_backend)
     {
-        ImGui_ImplSDLRenderer2_Shutdown();
-        ImGui_ImplSDL2_Shutdown();
+        ImGui_ImplSDLRenderer3_Shutdown();
+        ImGui_ImplSDL3_Shutdown();
     }
 
     ImGui::DestroyContext(m_guiContext);

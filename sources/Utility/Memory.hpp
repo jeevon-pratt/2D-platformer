@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef _MSC_VER
-    #include <vcruntime.h>  // operator new annotations
+#include <vcruntime.h>  // operator new annotations
 #endif
 
 #include <json/json.h>      // Jsoncpp functionality

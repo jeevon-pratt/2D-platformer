@@ -1,6 +1,6 @@
-#include <SDL2/SDL_events.h>            // SDL__PollEvent function
-#include <SDL2/SDL_pixels.h>            // SDL_Color struct
-#include <SDL2/SDL_ttf.h>               // TTF_Font struct
+#include <SDL3/SDL_events.h>            // SDL__PollEvent function
+#include <SDL3/SDL_pixels.h>            // SDL_Color struct
+#include <SDL3_ttf/SDL_ttf.h>           // TTF_Font struct
 
 #include "Core/Game_2D.hpp"             // Game2D class
 #include "Game_State/Game_State.hpp"    // Game state classes and enum
@@ -41,7 +41,7 @@ void MainMenuState::OnHandle(Game2D& app)
 {
     if (static SDL_Event s_event; SDL_WaitEvent(&s_event))
     {
-        if (s_event.type == SDL_QUIT)
+        if (s_event.type == SDL_EVENT_QUIT)
         {
             app.m_stateManager.PopState();
             app.m_stateManager.PushState(GAME_OVER_STATE);

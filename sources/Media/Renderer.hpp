@@ -1,6 +1,6 @@
 #pragma once
 
-#include <box2d/b2_math.h>  // b2Vec2 class
+#include <box2d/b2_math.h>    // b2Vec2 class
 
 struct b2Vec2;
 struct SDL_Color;

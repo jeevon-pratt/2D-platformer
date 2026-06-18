@@ -1,7 +1,7 @@
 #pragma once
 
-#include <SDL2/SDL_keyboard.h>  // SDL_GetKeyboardState function
-#include <SDL2/SDL_scancode.h>  // SDL_Scancode enum
+#include <SDL3/SDL_keyboard.h>    // SDL_GetKeyboardState function
+#include <SDL3/SDL_scancode.h>    // SDL_Scancode enum
 
 
 /**
@@ -19,4 +19,4 @@ enum SCANCODE
 /**
  *  Global variable that holds the keyboard state
  */
-inline const uint8_t* g_keyState = SDL_GetKeyboardState(nullptr);
+inline const bool* g_keyState = SDL_GetKeyboardState(nullptr);

@@ -28,17 +28,26 @@ endif()
 
 
 
-# ********************
+# ******************
 # IMGUI SOURCE FILES
-# ********************
+# ******************
 
 set(IMGUI_SOURCES
+    vendor/imgui/imconfig.h
     vendor/imgui/imgui.cpp
+    vendor/imgui/imgui.h
+    vendor/imgui/imgui_demo.cpp
     vendor/imgui/imgui_draw.cpp
+    vendor/imgui/imgui_internal.h
     vendor/imgui/imgui_tables.cpp
     vendor/imgui/imgui_widgets.cpp
-    vendor/imgui/backends/imgui_impl_sdl2.cpp
-    vendor/imgui/backends/imgui_impl_sdlrenderer2.cpp
+    vendor/imgui/imstb_rectpack.h
+    vendor/imgui/imstb_textedit.h
+    vendor/imgui/imstb_truetype.h
+    vendor/imgui/backends/imgui_impl_sdl3.cpp
+    vendor/imgui/backends/imgui_impl_sdl3.h
+    vendor/imgui/backends/imgui_impl_sdlrenderer3.cpp
+    vendor/imgui/backends/imgui_impl_sdlrenderer3.h
 )
 
 
@@ -79,7 +88,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/sources"
-    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/Box2D/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/backends"
 )
@@ -90,10 +98,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 # FINDING EXTERNAL LIBRARIES
 # **************************
 
-find_package(SDL2 CONFIG REQUIRED)
-find_package(SDL2_image CONFIG REQUIRED)
-find_package(SDL2_ttf CONFIG REQUIRED)
-find_package(jsoncpp CONFIG REQUIRED)
+find_package(SDL3       CONFIG REQUIRED)
+find_package(SDL3_image CONFIG REQUIRED)
+find_package(SDL3_ttf   CONFIG REQUIRED)
+find_package(box2d      CONFIG REQUIRED)
+find_package(jsoncpp    CONFIG REQUIRED)
 
 
 
@@ -102,13 +111,11 @@ find_package(jsoncpp CONFIG REQUIRED)
 # **************************
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    SDL2::SDL2
-    SDL2_image::SDL2_image
-    SDL2_ttf::SDL2_ttf
+    SDL3::SDL3
+    SDL3_image::SDL3_image
+    SDL3_ttf::SDL3_ttf
+    box2d::box2d
     JsonCpp::JsonCpp
-    
-    $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/Box2D/lib/debug/box2d.lib>
-    $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/Box2D/lib/release/box2d.lib>
 )
 
 

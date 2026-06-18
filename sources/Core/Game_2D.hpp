@@ -1,7 +1,7 @@
 #pragma once
 
 #include <box2d/b2_math.h>                          // b2Vec2 class
-#include <SDL2/SDL_events.h>                        // SDL_Event union
+#include <SDL3/SDL_events.h>                        // SDL_Event union
 
 #include <memory>                                   // std::unique_ptr
 #include <utility>                                  // std::pair
@@ -22,8 +22,6 @@
 #include "Media/User_Interface.hpp"                 // UserInterface class
 #include "Media/Window.hpp"                         // Window class
 #include "Utility/Perf_Monitor.hpp"                 // PerfMonitor class
-
-struct _TTF_Font;                                   // typedef struct TTF_Font _TTF_Font
 
 
 /**
