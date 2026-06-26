@@ -9,7 +9,7 @@
 #include <string_view>              // const std::string&
 
 #include "Media/Window.hpp"         // Window class
-#include "Utility/Log.hpp"          // GAME_2D_LOG_CRITICAL macro function
+#include "Utility/Log.hpp"          // Log macro functions
 
 
 // **************
@@ -19,9 +19,11 @@
 Window::Window(const std::string& title, uint16_t width, uint16_t height):
     m_windowContext ( SDL_CreateWindow(title.data(), width, height, SDL_WINDOW_ALWAYS_ON_TOP) )
 {
+    GAME_2D_LOG_DEBUG("Initializing SDL3 window context\n");
+
     if (!m_windowContext)
     {
-        GAME_2D_LOG_CRITICAL("%s\n\n", SDL_GetError());
+        GAME_2D_LOG_CRITICAL("%s\n", SDL_GetError());
         std::exit(EXIT_FAILURE);
     }
 }
@@ -37,7 +39,7 @@ const SDL_Window* Window::GetContext() const
 
 uint16_t Window::GetWidth() const
 {
-    int width = 0;
+    int width;
 
     SDL_GetWindowSize(m_windowContext, &width, nullptr);
 
@@ -48,7 +50,7 @@ uint16_t Window::GetWidth() const
 
 uint16_t Window::GetHeight() const
 {
-    int height = 0;
+    int height;
 
     SDL_GetWindowSize(m_windowContext, nullptr, &height);
 
@@ -82,6 +84,8 @@ void Window::ShowMessageBox(const std::string& title, const std::string& message
 
 Window::~Window()
 {
+    GAME_2D_LOG_DEBUG("Deinitializing SDL3 window context\n");
+
     SDL_DestroyWindow(m_windowContext);
 }
 

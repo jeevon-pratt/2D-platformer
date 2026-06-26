@@ -10,60 +10,45 @@
 
 void AttackState::OnEnter(Player& player)
 {
-    // No Functionality
+    player.ResetAnimation("attack");
 }
 
 
 
 void AttackState::OnHandle(Player& player)
 {
-    if (g_keyState[SCANCODE_A]
-        || g_keyState[SCANCODE_D])
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(WALK_STATE);
-    }
-
-
-    if (g_keyState[SCANCODE_W])
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(JUMP_STATE);
-    }
-
-
-    if (g_keyState[SCANCODE_F])
-    {
-        // Perform attack logic
-        player.GetSprite().PlayAnimation("default"); // "attack"
-    }
-
-
     if (!g_keyState[SCANCODE_A]
         && !g_keyState[SCANCODE_D]
         && !g_keyState[SCANCODE_W]
         && !g_keyState[SCANCODE_F])
     {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(IDLE_STATE);
+        player.SetState(IDLE_STATE);
+        return;
     }
+
+
+    if (g_keyState[SCANCODE_A] || g_keyState[SCANCODE_D])
+        player.SetState(WALK_STATE);
+
+
+    if (g_keyState[SCANCODE_W])
+        player.SetState(JUMP_STATE);
 }
 
 
 
 void AttackState::OnUpdate(Player& player)
 {
-    if ( ApproxEq(player.GetHealth(), 0.0f) )
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(DEAD_STATE);
-    }
+    bool isDead    = ApproxEq(player.GetHealth(), 0.0f);
+    bool isFalling = !player.IsGrounded() && (player.GetVelocity().y <= 0.0f);
 
-    else if ( player.GetGroundContactsCount() == 0 )
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(FREE_FALL_STATE);
-    }
+    if (isDead)
+        player.SetState(DEAD_STATE);
+
+    else if (isFalling)
+        player.SetState(FREE_FALL_STATE);
+
+    player.PlayAnimation("attack");
 }
 
 

@@ -7,8 +7,8 @@
 
 #include "Media/Animation.hpp"  // Animation class, Frame class
 
-struct SDL_Texture;
 struct SDL_FRect;
+struct SDL_Texture;
 
 namespace Json
 {
@@ -43,6 +43,9 @@ public:
     // Constructor using sprite create info
     Sprite(const SpriteCreateInfo& info);
 
+    // Assignment operator using sprite create info
+    void operator=(const SpriteCreateInfo& info);
+
     // Loads the texture meta data from a local file
     //
     // Note: This method is also called in the sprite create info constructor
@@ -60,16 +63,19 @@ public:
     // Returns sprite frame height in pixels
     float GetFrameHeight() const;
 
-    // Returns the coordinate type of the Sprite
+    // Returns the coordinate type of the sprite
     bool UseScreenCoord() const;
 
-    // Returns the scroll factor of the Sprite
+    // Returns the scroll factor of the sprite
     float GetScrollFactor() const;
 
-    // Modifys the alpha value of the texture
+    // Modifys the alpha value of the sprite texture
     void SetAlphaMod(uint8_t alpha);
 
-    // Plays the animation assigned to a string key
+    // Resets the animation assigned to the string name
+    void ResetAnimation(const std::string& name);
+
+    // Plays the animation assigned to the string name
     void PlayAnimation(const std::string& name);
 
 private:

@@ -17,7 +17,7 @@ static std::ofstream s_logFile;
 
 
 
-bool InitLog(const std::string& filepath, LOG_PRIORITY priority)
+bool InitLog(const std::string& filepath, LogPriority priority)
 {
     SDL_SetLogOutputFunction(LogToFile, nullptr);
     SDL_SetLogPriority( SDL_LOG_CATEGORY_APPLICATION, static_cast<SDL_LogPriority>(priority) );

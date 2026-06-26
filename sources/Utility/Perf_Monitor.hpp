@@ -1,10 +1,5 @@
 #pragma once
 
-union SDL_Event;
-class ImGuiContext;
-class Renderer;
-
-
 /**
  * Class for analyzing the game performance
  */
@@ -15,47 +10,23 @@ public:
     // ==============
 
     // The Constructor
-    PerfMonitor(const Renderer& renderer);
+    PerfMonitor();
 
     // Sets the time interval on which frame rate display updates
     void SetInterval(uint32_t intervalTime);
-
-    // Sets the internal ImGui context as the current context
-    void SetCurrentContext();
 
     // Calculates the current frame time and frame rate
     //
     // Notes: This method should be called once per game loop iteration.
     void CalculateFrameRate();
 
-    // Handles user input for the monitor window
-    void HandleInput(const SDL_Event& event) const;
+    // Returns the frame rate
+    uint32_t GetFrameRate() const;
 
-    // Renders a debugging window with the performance information
-    void Render() const;
-
-    // Destroys the internal ImGui context and SDL backends
-    ~PerfMonitor();
+    // Returns the frame time
+    uint32_t GetFrameTime() const;
 
 private:
-    // INTERNAL FUNCTIONS
-    // ==================
-
-    // Note: The copy constructor and assignment have been disabled to prevent
-    //       the copying of an ImGui context
-    PerfMonitor(const PerfMonitor&) = delete;
-    void operator=(const PerfMonitor&) = delete;
-
-private:
-    // The internal SDL renderer context responsible for displaying info
-    const SDL_Renderer* m_rendererContext;
-
-    // The internal ImGui context
-    ImGuiContext* m_guiContext;
-
-    // Boolean that determines if ImGui and the SDL backends are initialized
-    bool m_backend;
-
     // This variable holds the start time for the internal timer.
     //
     // Note: This value is set in the 'CalculateFrameRate' method.

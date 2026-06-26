@@ -10,8 +10,16 @@
  */
 struct Frame
 {
-    SDL_FRect srcrect;  // The source SDL_Rect structure of the frame image
-    uint8_t  duration;  // The duration of the frame's appearance in milliseconds
+    SDL_FRect srcrect;   // The source SDL_Rect structure of the frame image
+    uint8_t   duration;  // The duration of the frame's appearance in milliseconds
+
+
+    // Default Constructor
+    Frame() = default;
+
+    // Member Constructor
+    Frame(const SDL_FRect& rect, uint8_t value):
+        srcrect {rect},  duration (value)  {}
 };
 
 
@@ -27,31 +35,26 @@ public:
     // Default Constructor
     Animation();
 
-    // Returns the current animation frame
-    const Frame& GetCurrentFrame() const;
-
     // Adds a frame structure to the vector of frame meta data
     void AddFrame(const Frame& frame);
 
-    // Progresses the animation cycle
-    void NextFrame();
-
-    // Increments the animation cycle's elapsed time
-    void StepTime();
-
-    // A function used by the sprite class to determine whether the elasped time
-    // exceeds the set duration of the current animation frame
+    // Returns a boolean indicating whether the elasped time exceeds the duration
+    // of the current animation frame
     bool FrameTimeExceeded() const;
 
     // Returns a boolean that determines if an animation cycle has been completed
-    bool CycleComplete() const;
+    bool CycleCompleted() const; 
+
+    // Returns the current animation frame
+    const Frame& GetCurrentFrame() const;
+
+    // Resets the animation cycle
+    void Reset();
+
+    // Plays the animation cycle
+    void Play();
 
 private:
-    // Boolean that determines if an animation cycle has been completed
-    //
-    // Note: This variable is modified by the 'StepCycle' method.
-    bool m_cycleComplete;
-
     // Holds the start time for the internal animation timer
     //
     // Note: This value is modified in the 'StepTime' method.
@@ -69,8 +72,6 @@ private:
     //       when loading sprite meta data.
     std::vector<Frame> m_frames;
 
-    // The std::vector index to the current animation frame
-    //
-    // Note: When a cycle is completed, the current index loops back to 0.
-    uint32_t m_currentIndex;
+    // An index to the current animation frame
+    uint8_t m_currentIndex;
 };

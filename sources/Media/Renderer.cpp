@@ -6,31 +6,96 @@
 #include <cstdlib>                      // std::exit, EXIT_FAILURE
 #include <numbers>                      // std::numbers::pi
 
+#include "imgui.h"                      // ImGui functionality
+#include "imgui_impl_sdl3.h"            // ImGui_ImplSDL3 functionality
+#include "imgui_impl_sdlrenderer3.h"    // ImGui_ImplSDLRenderer3 functionality
+
 #include "Entity/Game_Object.hpp"       // GameObject class
+#include "Entity/Sprite.hpp"            // Sprite class
 #include "Media/Renderer.hpp"           // Renderer class
-#include "Media/Sprite.hpp"             // Sprite class
 #include "Media/Text.hpp"               // Text class
 #include "Media/User_Interface.hpp"     // UserInterface class
 #include "Media/Window.hpp"             // Window class
-#include "Utility/Log.hpp"              // GAME_2D_LOG_CRITICAL macro function
+#include "Utility/Log.hpp"              // Log macro functions
 #include "Utility/Math.hpp"             // RoundToInt and ConvertToScreenCoord functions
+#include "Utility/Perf_Monitor.hpp"     // PerfMonitor class
 
 
 // **************
 // IMPLEMENTATION
 // **************
 
-Renderer::Renderer(const Window& window)
+Renderer::Renderer(const Window& window):
+    m_rendererContext (nullptr),
+    m_imGuiContext    (false),
+    m_imGuiSDL3       (false),
+    m_imGuiRenderer   (false)
 {
-    SDL_Window* windowContext = const_cast<SDL_Window*>( window.GetContext() );
-    
-    m_rendererContext = SDL_CreateRenderer(windowContext, nullptr);
+    // Initialization of SDL Renderer
+    // ==============================
 
-    if (!m_rendererContext)
+    GAME_2D_LOG_DEBUG("Initializing SDL3 renderer context\n");
+
+    SDL_Window*   windowContext   = const_cast<SDL_Window*>( window.GetContext() );
+    SDL_Renderer* rendererContext = SDL_CreateRenderer(windowContext, nullptr);
+
+    if (!rendererContext)
     {
-        GAME_2D_LOG_CRITICAL("%s\n\n", SDL_GetError());
+        GAME_2D_LOG_CRITICAL("%s\n", SDL_GetError());
         std::exit(EXIT_FAILURE);
     }
+
+    m_rendererContext = rendererContext;
+
+
+
+    // Initialization of ImGui
+    // =======================
+
+    GAME_2D_LOG_DEBUG("Initializing ImGui context\n");
+
+    IMGUI_CHECKVERSION();
+
+    if ( !ImGui::CreateContext() )
+    {
+        GAME_2D_LOG_ERROR("Failed to create the ImGui context\n");
+        return;
+    }
+
+    ImGui::GetIO().FontGlobalScale = 2.0f;
+
+    m_imGuiContext = true;
+
+
+
+    // Initialization of SDL3 Backend
+    // ===============================
+
+    GAME_2D_LOG_DEBUG("Initializing ImGui SDL3 backend\n");
+
+    if ( !ImGui_ImplSDL3_InitForSDLRenderer(windowContext, rendererContext) )
+    {
+        GAME_2D_LOG_ERROR("Failed to initialize ImGui SDL3 backend\n");
+        return;
+    }
+
+    m_imGuiSDL3 = true;
+
+
+
+
+    // Initialization of SDL3 Renderer Backend
+    // =======================================
+
+    GAME_2D_LOG_DEBUG("Initializing ImGui SDL3 renderer backend\n");
+
+    if ( !ImGui_ImplSDLRenderer3_Init(rendererContext) )
+    {
+        GAME_2D_LOG_ERROR("Failed to initialize ImGui SDL3 Renderer backend\n");
+        return;
+    }
+    
+    m_imGuiRenderer = true;
 }
 
 
@@ -38,6 +103,14 @@ Renderer::Renderer(const Window& window)
 const SDL_Renderer* Renderer::GetContext() const
 {
     return m_rendererContext;
+}
+
+
+
+void Renderer::HandleInput(const SDL_Event& event) const
+{
+    if (m_imGuiSDL3 && m_imGuiRenderer)
+        ImGui_ImplSDL3_ProcessEvent(&event);
 }
 
 
@@ -116,13 +189,13 @@ void Renderer::Render(const GameObject& object, b2Vec2 camTransform) const
     SDL_FRect dstrect;
     dstrect.x = screenCoord.x;
     dstrect.y = screenCoord.y;
-    dstrect.w = object.GetSprite().GetFrameWidth();
-    dstrect.h = object.GetSprite().GetFrameHeight();
+    dstrect.w = object.GetFrameWidth();
+    dstrect.h = object.GetFrameHeight();
 
 
     SDL_RenderTextureRotated(m_rendererContext,
-                             const_cast<SDL_Texture*>( object.GetSprite().GetTexture() ),
-                             &object.GetSprite().GetSourceRect(),
+                             const_cast<SDL_Texture*>( object.GetTexture() ),
+                             &object.GetSourceRect(),
                              &dstrect,
                              -object.GetAngle() * (180.0 / std::numbers::pi),
                              nullptr,
@@ -171,6 +244,26 @@ void Renderer::Render(const UserInterface& interface) const
 
 
 
+void Renderer::Render(const PerfMonitor& monitor) const
+{
+    if (!m_imGuiContext || !m_imGuiSDL3 || !m_imGuiRenderer)
+        return;
+
+    ImGui_ImplSDLRenderer3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::Begin("Performance Monitor");
+    ImGui::Text("Frame Rate: %u FPS", monitor.GetFrameRate());
+    ImGui::Text("Frame Time: %u ms",  monitor.GetFrameTime());
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_rendererContext);
+}
+
+
+
 void Renderer::Display() const
 {
     SDL_RenderPresent(m_rendererContext);
@@ -180,5 +273,24 @@ void Renderer::Display() const
 
 Renderer::~Renderer()
 {
+    if (m_imGuiRenderer)
+    {
+        GAME_2D_LOG_DEBUG("Denitializing ImGui SDL3 renderer backend\n");
+        ImGui_ImplSDLRenderer3_Shutdown();
+    }
+
+    if (m_imGuiSDL3)
+    {
+        GAME_2D_LOG_DEBUG("Denitializing ImGui SDL3 backend\n");
+        ImGui_ImplSDL3_Shutdown();
+    }
+
+    if (m_imGuiContext)
+    {
+        GAME_2D_LOG_DEBUG("Denitializing ImGui context\n");
+        ImGui::DestroyContext();
+    }
+
+    GAME_2D_LOG_DEBUG("Denitializing SDL3 renderer context\n");
     SDL_DestroyRenderer(m_rendererContext);
 }

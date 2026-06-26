@@ -2,7 +2,7 @@
 
 #include <box2d/b2_math.h>         // b2Vec2 class
 
-#include "Media/Sprite.hpp"        // Sprite class
+#include "Entity/Sprite.hpp"       // Sprite class
 
 struct SDL_Texture;
 class  b2Body;
@@ -29,19 +29,23 @@ public:
     // Default Constructor
     GameObject();
 
-    // Copy Constructor
+    // Move Constructor
     //
-    // Note: Due to the limitations of Box2D, shallow copies are performed for the
-    //       physics body and main fixture. The 'CreateBody' and 'CreateMainFixture'
-    //       methods should be called to create deep copies of these physics attributes.
-    GameObject(const GameObject& object);
+    // Note: 1) If 'object' does not already have a sprite, 'CreateSprite' will have to
+    //          be called.
+    //
+    //       2) If 'object' does not already have a physics body defined, 'CreateBody'
+    //          will have to be called.
+    GameObject(GameObject&& object) noexcept;
 
-    // Assignment Operator
+    // Move Assignment Operator
     //
-    // Note: Due to the limitations of Box2D, shallow copies are performed for the
-    //       physics body and main fixture. The 'CreateBody' and 'CreateMainFixture'
-    //       methods should be called to create deep copies of these physics attributes.
-    void operator=(const GameObject& object);
+    // Note: 1) If 'object' does not already have a sprite, 'CreateSprite' will have to
+    //          be called.
+    //
+    //       2) If 'object' does not already have a physics body defined, 'CreateBody'
+    //          will have to be called.     
+    void operator=(GameObject&& object) noexcept;
 
     // Creates the sprite of the game object
     virtual void CreateSprite(const TextureManager& manager, const Json::Value& sprite);
@@ -54,6 +58,21 @@ public:
 
     // Returns a const reference to the game object sprite
     virtual const Sprite& GetSprite() const;
+
+        // Returns the current animation frame of the sprite
+    const SDL_FRect& GetSourceRect() const;
+
+    // Returns texture of the sprite
+    const SDL_Texture* GetTexture() const;
+
+    // Returns sprite frame width in pixels
+    virtual float GetFrameWidth() const;
+
+    // Returns sprite frame height in pixels
+    virtual float GetFrameHeight() const;
+
+    // Returns the scroll factor of the sprite
+    virtual float GetScrollFactor() const;
 
     // Returns the current position
     virtual b2Vec2 GetPosition() const;
@@ -82,9 +101,6 @@ public:
     // Sets the linear velocity vector
     virtual void SetVelocity(b2Vec2 force);
 
-    // Applies a force to the center of mass
-    virtual void ApplyForceToCenter(b2Vec2 force);
-
     // Negates the boolean that controls the direction of the game object
     virtual void Invert();
 
@@ -93,6 +109,15 @@ public:
 
     // Resets the object to its spawn point
     virtual void Respawn();
+
+    // Resets the animation assigned to the string name
+    //
+    // Note: This function should be called exactly once at the moment the object
+    //       transitions into a new state
+    virtual void ResetAnimation(const std::string& name);
+
+    // Plays the animation assigned to the string name
+    virtual void PlayAnimation(const std::string& name);
 
     // Default destructor
     virtual ~GameObject() = default;
@@ -116,7 +141,7 @@ protected:
     //
     // Note: A value of 'true' indicates that the object is facing left and a value of
     //       'false' indicates that the object is facing right.
-    bool m_isInverted;
+    bool m_inverted;
 
     // The Box2D physics body of the game object
     //

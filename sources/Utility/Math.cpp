@@ -4,8 +4,8 @@
 #include <iostream>                 // std::ostream
 
 #include "Entity/Game_Object.hpp"   // GameObject class
+#include "Entity/Sprite.hpp"        // Sprite class
 #include "Media/Renderer.hpp"       // Renderer::PIXELS_PER_METER constant
-#include "Media/Sprite.hpp"         // Sprite class
 
 
 // *****************************

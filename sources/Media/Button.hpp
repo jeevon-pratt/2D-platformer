@@ -4,7 +4,7 @@
 
 #include <string>               // std::string
 
-#include "Media/Sprite.hpp"     // Sprite class
+#include "Entity/Sprite.hpp"    // Sprite class
 
 union SDL_Event;
 

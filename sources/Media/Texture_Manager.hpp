@@ -5,8 +5,7 @@
 
 struct SDL_Renderer;
 struct SDL_Texture;
-
-class Renderer;
+class  Renderer;
 
 
 /**

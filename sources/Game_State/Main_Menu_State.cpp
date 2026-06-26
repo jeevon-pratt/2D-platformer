@@ -1,9 +1,8 @@
-#include <SDL3/SDL_events.h>            // SDL__PollEvent function
-#include <SDL3/SDL_pixels.h>            // SDL_Color struct
-#include <SDL3_ttf/SDL_ttf.h>           // TTF_Font struct
+#include <SDL3/SDL_events.h>            // SDL_WaitEvent function
 
 #include "Core/Game_2D.hpp"             // Game2D class
 #include "Game_State/Game_State.hpp"    // Game state classes and enum
+#include "Utility/Log.hpp"              // GAME_2D_LOG_DEBUG macro function
 #include "Utility/Save_System.hpp"      // SaveFileData struct, LoadFromSaveFile function
 
 
@@ -18,21 +17,21 @@ static Text s_subtitle;
 
 void MainMenuState::OnEnter(Game2D& app)
 {
-    const TTF_Font* titleFont    = app.m_fontManager.Get("cocogoose_48");
-    const TTF_Font* subtitleFont = app.m_fontManager.Get("cocogoose_36"); 
+    GAME_2D_LOG_DEBUG("Entering Main Menu State\n");
 
-    constexpr SDL_Color COLOR_BLUE  { 0, 0, 175 };
+    s_title.str    = "2D PLATFORMER";
+    s_subtitle.str = "by Jee'Von Pratt";
 
+    s_title.font    = app.m_fontManager.Get("cocogoose_48");
+    s_subtitle.font = app.m_fontManager.Get("cocogoose_36");
 
-    s_title.str   = "2D PLATFORMER";
-    s_title.font  = titleFont;
-    s_title.color = COLOR_BLUE;
+    s_title.color.r = 0;
+    s_title.color.g = 0;
+    s_title.color.b = 175;
 
-    s_subtitle.str   = "by Jee'Von Pratt";
-    s_subtitle.font  = subtitleFont;
-    s_subtitle.color = COLOR_BLUE;
-
-    Window::ShowCursor();
+    s_subtitle.color.r = 0;
+    s_subtitle.color.g = 0;
+    s_subtitle.color.b = 175;
 }
 
 
@@ -108,5 +107,7 @@ void MainMenuState::OnRender(Game2D& app)
 
 void MainMenuState::OnExit(Game2D& app)
 {
+    GAME_2D_LOG_DEBUG("Exiting Main Menu State\n");
+
     // No Functionality
 }

@@ -4,68 +4,78 @@
 #include "Utility/Math.hpp"                 // ApproxEq function
 
 
+// ****************
+// HELPER FUNCTIONS
+// ****************
+
+static void Jump(Player& player)
+{
+    if (!player.IsGrounded())
+        return;
+   
+    // Note: The x-component of the jump velocity is not 0 to make it possible
+    //       for the player to jump while walking in any direction.
+
+    b2Vec2 velocity;
+    velocity.x = player.GetVelocity().x;
+    velocity.y = Player::JUMP_SPEED;
+
+    player.SetVelocity(velocity);
+}
+
+
+
 // **************
 // IMPLEMENTATION
 // **************
 
 void JumpState::OnEnter(Player& player)
 {
-    // No Functionality
+    player.ResetAnimation("jump");
 }
 
 
 
 void JumpState::OnHandle(Player& player)
-{    
-    if (g_keyState[SCANCODE_W])
+{
+    if (g_keyState[SCANCODE_A])
     {
-        b2Vec2 currentVel = player.GetVelocity();
-
-        // Note: The x-component of the jump velocity is not 0 to make it possible
-        //       for the player to jump while walking in any direction.
-
-        if ( player.GetGroundContactsCount() > 0 )
-            player.SetVelocity( b2Vec2(currentVel.x, Player::JUMP_SPEED) );
+        // Allow player to invert in mid-air
+        if (!player.IsInverted())
+            player.Invert();
     }
+
+    
+    if (g_keyState[SCANCODE_D])
+    {
+        // Allow player to invert in mid-air
+        if (player.IsInverted())
+            player.Invert();
+    }
+
+
+    if (g_keyState[SCANCODE_W])
+        Jump(player);
 
     
     if (g_keyState[SCANCODE_F])
-    {
-        if (player.GetGroundContactsCount() == 0)
-            return;
-
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(ATTACK_STATE);
-    }
-
-    
-    if (!g_keyState[SCANCODE_A]
-        && !g_keyState[SCANCODE_D]
-        && !g_keyState[SCANCODE_W]
-        && !g_keyState[SCANCODE_F])
-    {
-        if (player.GetGroundContactsCount() == 0)
-            return;
-
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(IDLE_STATE);
-    }
+        player.SetState(ATTACK_STATE);
 }
 
 
 
 void JumpState::OnUpdate(Player& player)
 {
-    if ( ApproxEq(player.GetHealth(), 0.0f) )
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(DEAD_STATE);
-        return;
-    }
+    bool isDead    = ApproxEq(player.GetHealth(), 0.0f);
+    bool isFalling = !player.IsGrounded() && (player.GetVelocity().y <= 0.0f);
+    
+    if (isDead)
+        player.SetState(DEAD_STATE);
+       
+    else if (isFalling)
+        player.SetState(FREE_FALL_STATE);
 
-    player.GetSprite().PlayAnimation("default"); // "jump"
-    player.GetStateManager().PopState();
-    player.GetStateManager().PushState(FREE_FALL_STATE);
+    player.PlayAnimation("jump");
 }
 
 

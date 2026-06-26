@@ -3,8 +3,10 @@
 #include <box2d/b2_world.h>                 // b2World class
 #include <json/value.h>                     // Json::Value class
 
+#include <utility>                          // std::move
+
 #include "Entity/Player.hpp"                // Player class
-#include "Player_State/Player_State.hpp"    // PLAYER_STATE_TYPE enum
+#include "Player_State/Player_State.hpp"    // PlayerStateID enum
 #include "Utility/Assert.hpp"               // GAME_2D_ASSERT macro function
 #include "Utility/Math.hpp"                 // Clamp function
 
@@ -15,45 +17,39 @@
 
 Player::Player():
     GameObject       (),
-    m_prevPos        (0.0f, 0.0f),
-    m_maxHealth      (100.0f),
     m_health         (100.0f),
-    m_fallDistance   (0.0f),
     m_groundSensor   (nullptr),
-    m_groundContacts (0)
+    m_groundContacts (0),
+    m_impactSpeed    (0.0f)
 {
-    m_stateManager.LinkToPlayer(*this);
 }
 
 
 
-Player::Player(const Player& player):
-    GameObject       (player),
-    m_prevPos        (player.m_prevPos),
-    m_maxHealth      (player.m_maxHealth),
+Player::Player(Player&& player) noexcept:
+    GameObject       (std::move(player)),
     m_health         (player.m_health),
-    m_fallDistance   (player.m_fallDistance),
     m_groundSensor   (nullptr),
-    m_groundContacts (0)
+    m_groundContacts (0),
+    m_impactSpeed    (0.0f)
 {
-    m_stateManager.LinkToPlayer(*this);
+    player.m_body    = nullptr;
+    player.m_fixture = nullptr;
 }
 
 
 
-void Player::operator=(const Player& player)
+void Player::operator=(Player&& player) noexcept
 {
-    m_sprite         = player.m_sprite;
-    m_isInverted     = false;
-    m_body           = player.m_body;
-    m_fixture        = player.m_fixture;
-    m_spawn          = player.m_spawn;
-    m_prevPos        = player.m_prevPos;
-    m_maxHealth      = player.m_maxHealth;
+    if (this == &player)
+        return;
+    
+    GameObject::operator=(std::move(player));
+
     m_health         = player.m_health;
-    m_fallDistance   = player.m_fallDistance;
     m_groundSensor   = nullptr;
     m_groundContacts = 0;
+    m_impactSpeed    = 0.0f;
 }
 
 
@@ -73,8 +69,10 @@ void Player::CreateHitBox(b2World& world, const Json::Value& player)
     edge.SetTwoSided(vertex1, vertex2);
 
     b2FixtureDef def;
-    def.shape    = &edge;
-    def.isSensor = true;
+    def.shape       = &edge;
+    def.density     = player["density"].asFloat();
+    def.friction    = player["friction"].asFloat();
+    def.restitution = player["restitution"].asFloat();
 
     m_groundSensor = m_body->CreateFixture(&def);
 }
@@ -88,37 +86,23 @@ float Player::GetHealth() const
 
 
 
-uint8_t Player::GetGroundContactsCount() const
+float Player::GetImpactSpeed() const
 {
-    return m_groundContacts;
+    return m_impactSpeed;
 }
 
 
 
-float Player::GetFallDistance() const
+bool Player::IsGrounded() const
 {
-    return m_fallDistance;
+    return (m_groundContacts > 0);
 }
 
 
 
-PLAYER_STATE_TYPE Player::GetCurrentState() const
+bool Player::IsState(PlayerStateID state) const
 {
-    return m_stateManager.GetCurrentState();
-}
-
-
-
-PlayerStateManager& Player::GetStateManager()
-{
-    return m_stateManager;
-}
-
-
-
-const PlayerStateManager& Player::GetStateManager() const
-{
-    return m_stateManager;
+    return m_stateManager.IsState(state);
 }
 
 
@@ -127,7 +111,7 @@ void Player::SetHealth(float health)
 {
     m_health = health;
 
-    Clamp(m_health, 0.0f, m_maxHealth);
+    Clamp(m_health, 0.0f, 100.0f);
 }
 
 
@@ -143,22 +127,24 @@ void Player::ApplyDamage(float externalDamage)
 
 
 
-void Player::IncrementFallDistance()
+void Player::SetState(PlayerStateID state)
 {
-    if (m_prevPos.y < GetPosition().y)
-        return;
-
-    float dy = (m_prevPos.y - GetPosition().y);
-
-    m_fallDistance += dy;
-    m_prevPos = GetPosition();
+    m_stateManager.PopState();
+    m_stateManager.PushState(state);
 }
 
 
 
-void Player::ResetFallDistance()
+void Player::HandleInput()
 {
-    m_fallDistance = 0.0f;
+    m_stateManager.HandleInput(*this);
+}
+
+
+
+void Player::Update()
+{
+    m_stateManager.Update(*this);
 }
 
 
@@ -167,7 +153,5 @@ void Player::Respawn()
 {
     GameObject::Respawn();
 
-    m_prevPos      = m_spawn;
-    m_health       = m_maxHealth;
-    m_fallDistance = 0.0f;
+    m_health = 100.0f;
 }

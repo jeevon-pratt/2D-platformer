@@ -3,8 +3,8 @@
 #include <string>               // std::string
 #include <vector>               // std::vector
 
+#include "Entity/Sprite.hpp"    // Sprite class, SpriteCreateInfo struct
 #include "Media/Button.hpp"     // Button class
-#include "Media/Sprite.hpp"     // Sprite class, SpriteCreateInfo struct
 
 union  SDL_Event;
 struct b2Vec2;

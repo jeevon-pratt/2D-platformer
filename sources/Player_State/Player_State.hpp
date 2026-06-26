@@ -3,14 +3,14 @@
 class Player;
 
 
-// ******************
-// PLAYER STATE TYPES
-// ******************
+// ***************
+// PLAYER STATE ID
+// ***************
 
 /**
  * Enumeration for denoting player state types
  */
-enum PLAYER_STATE_TYPE
+enum PlayerStateID
 {
     IDLE_STATE,
     WALK_STATE,

@@ -60,4 +60,7 @@ private:
     //
     // Note: The context can be modified even if the Window object is const.
     SDL_Window* m_windowContext;
+
+    // Boolean that indicates if the ImGui context has been initialized.
+    bool m_imGuiContext;
 };

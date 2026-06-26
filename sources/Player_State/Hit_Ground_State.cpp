@@ -9,62 +9,53 @@
 // **************
 
 void HitGroundState::OnEnter(Player& player)
-{
-    float fallDistance = player.GetFallDistance();
+{    
+    float impactSpeed = player.GetImpactSpeed();
 
-    if (fallDistance > 5.0f)
-        player.ApplyDamage(fallDistance / 2.0f - 5.0f);
+    if (impactSpeed > 20.0f)
+        player.ApplyDamage(0.5f * impactSpeed);
 
-    player.ResetFallDistance();
-    player.GetSprite().PlayAnimation("default"); // "hit_ground"
+    player.ResetAnimation("hit_ground");
 }
 
 
 
 void HitGroundState::OnHandle(Player& player)
 {
-    if (g_keyState[SCANCODE_A]
-        || g_keyState[SCANCODE_D])
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(WALK_STATE);
-    }
+    // if hit ground animation has not completed, bypass handling
 
-    
-    if (g_keyState[SCANCODE_W])
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(JUMP_STATE);
-    }
-
-
-    
-    if (g_keyState[SCANCODE_F])
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(ATTACK_STATE);
-    }
-
-    
     if (!g_keyState[SCANCODE_A]
         && !g_keyState[SCANCODE_D]
         && !g_keyState[SCANCODE_W]
         && !g_keyState[SCANCODE_F])
     {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(IDLE_STATE);
+        player.SetState(IDLE_STATE);
+        return;
     }
+
+
+    if (g_keyState[SCANCODE_A] || g_keyState[SCANCODE_D])
+        player.SetState(WALK_STATE);
+
+    
+    if (g_keyState[SCANCODE_W])
+        player.SetState(JUMP_STATE);
+
+    
+    if (g_keyState[SCANCODE_F])
+        player.SetState(ATTACK_STATE);
 }
 
 
 
 void HitGroundState::OnUpdate(Player& player)
 {
-    if ( ApproxEq(player.GetHealth(), 0.0f) )
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(DEAD_STATE);
-    }
+    bool isDead = ApproxEq(player.GetHealth(), 0.0f);
+    
+    if (isDead)
+        player.SetState(DEAD_STATE);
+
+    player.PlayAnimation("hit_ground");
 }
 
 

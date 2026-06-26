@@ -1,12 +1,13 @@
 #pragma once
 
-#include <box2d/b2_math.h>    // b2Vec2 class
+#include <box2d/b2_math.h>    // b2Vec2 struct
 
-struct b2Vec2;
 struct SDL_Color;
 struct SDL_Renderer;
 struct SDL_Window;
+union  SDL_Event;
 class  GameObject;
+class  PerfMonitor;
 class  Sprite;
 class  UserInterface;
 class  Window;
@@ -37,6 +38,9 @@ public:
     // Returns the SDL renderer context
     const SDL_Renderer* GetContext() const;
 
+    // Handles user input for the ImGui context
+    void HandleInput(const SDL_Event& event) const;
+
     // Clears the internal SDL renderer
     void Clear() const;
 
@@ -55,6 +59,9 @@ public:
     // Renders the elements of a user interface
     void Render(const UserInterface& interface) const;
 
+    // Renders the performance monitor window
+    void Render(const PerfMonitor& monitor) const;
+
     // Displays the rendered objects onto the screen
     void Display() const;
 
@@ -70,12 +77,18 @@ private:
     Renderer(const Renderer&) = delete;
     void operator=(const Renderer&) = delete;
 
-    // Creates the ImGui Context
-    void InitImGui(SDL_Window* window);
-
 private:
     // The internal SDL renderer context responsible for drawing sprites
     //
     // Note: The context can be modified even if the Renderer object is const.
     SDL_Renderer* m_rendererContext;
+
+    // Boolean that indicates if the ImGui context has been initialized.
+    bool m_imGuiContext;
+
+    // Boolean that indicates if the ImGui SDL3 backend has been initialized.
+    bool m_imGuiSDL3;
+
+    // Boolean that indicates if the ImGui Renderer backend has been initialized.
+    bool m_imGuiRenderer;
 };

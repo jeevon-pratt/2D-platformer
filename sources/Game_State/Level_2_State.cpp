@@ -21,7 +21,7 @@ void Level2State::OnHandle(Game2D& app)
 {
     static SDL_Event s_event;
 
-    while ( SDL_PollEvent(&s_event) )
+    while (SDL_PollEvent(&s_event))
     {
         if (s_event.type == SDL_EVENT_QUIT)
         {
@@ -32,10 +32,10 @@ void Level2State::OnHandle(Game2D& app)
 
         app.m_window.HandleInput(s_event);
         app.m_levelUI.HandleInput(s_event);
-        app.m_perfMonitor.HandleInput(s_event);
+        app.m_renderer.HandleInput(s_event);
     }
 
-    app.m_player.GetStateManager().HandleInput();
+    app.m_player.HandleInput();
 }
 
 
@@ -57,8 +57,8 @@ void Level2State::OnUpdate(Game2D& app)
 
 void Level2State::OnRender(Game2D& app)
 {
-    static constexpr SDL_Color s_colorOrange { 255, 117, 24 };
-    static constexpr SDL_Color s_colorRed { 255, 0, 0 };
+    static constexpr SDL_Color s_colorOrange{ 255, 117, 24 };
+    static constexpr SDL_Color s_colorRed{ 255, 0, 0 };
 
     b2Vec2 camTransform = app.m_camera.GetTransform();
 
@@ -80,9 +80,9 @@ void Level2State::OnRender(Game2D& app)
     for (const auto& [sprite, pos] : app.m_foregroundLayer)
         app.m_renderer.Render(sprite, pos, camTransform);
 
-    app.m_perfMonitor.Render();
+    app.m_renderer.Render( app.m_perfMonitor );
     app.m_renderer.Display();
-    
+
     app.m_perfMonitor.CalculateFrameRate();
 }
 

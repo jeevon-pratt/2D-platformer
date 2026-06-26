@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>                           // std::unique_ptr
+#include <memory>                           // std::shared_ptr
 #include <stack>                            // std::stack
 #include <unordered_map>                    // std::unordered_map
 
@@ -13,32 +13,26 @@
 class PlayerStateManager final
 {
 public:
-    using STATE_POINTER = std::unique_ptr<PlayerState>;
-
-public:
     // IMPLEMENTATION
     // ==============
 
     // Default Constructor
     PlayerStateManager();
 
-    // Links the player to the state manager
-    void LinkToPlayer(Player& player);
-
-    // Returns the current state type
-    PLAYER_STATE_TYPE GetCurrentState() const;
+    // Returns a boolean indicating if 'state' is the current player state
+    bool IsState(PlayerStateID state) const;
 
     // Pushes a new state to the state manager stack
-    void PushState(PLAYER_STATE_TYPE newState);
+    void PushState(PlayerStateID newState);
 
     // Pops the top state from the state manager stack
     void PopState();
 
     // Handles user input
-    void HandleInput();
+    void HandleInput(Player& player);
 
     // Updates the active state
-    void Update();
+    void Update(Player& player);
 
 private:
     // INTERNAL FUNCTIONS
@@ -49,19 +43,16 @@ private:
     PlayerStateManager(PlayerStateManager& manager) = delete;
     void operator=(PlayerStateManager& manager) = delete;
 
-private:
-    // A pointer to the player
-    //
-    // Note: This variable must be populated by calling the 'LinkToPlayer'
-    //       method before running the game loop.
-    Player* m_playerData;
+    // Helper function that returns the current state object
+    std::shared_ptr<PlayerState> GetCurrentState();
 
-    // The type of the current state
-    PLAYER_STATE_TYPE m_currentState;
+private:
+    // The ID of the current state
+    PlayerStateID m_state;
 
     // The stack used for transitioning between different player states
-    std::stack<PLAYER_STATE_TYPE> m_stack;
+    std::stack<PlayerStateID> m_stack;
 
     // Hash lookup table for player state objects
-    std::unordered_map<PLAYER_STATE_TYPE, STATE_POINTER> m_stateTable;
+    std::unordered_map<PlayerStateID, std::shared_ptr<PlayerState>> m_stateTable;
 };

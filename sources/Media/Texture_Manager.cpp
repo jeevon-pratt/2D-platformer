@@ -10,7 +10,7 @@
 // SYMBOLIC CONSTANTS
 // ******************
 
-static constexpr uint16_t MAX_TEXTURES = 500;
+static constexpr uint16_t MAX_TEXTURES = 100;
 
 
 
@@ -28,7 +28,7 @@ TextureManager::TextureManager(const Renderer& renderer):
 
 void TextureManager::LoadTexture(const std::string& name, const std::string& filepath)
 {
-    GAME_2D_LOG_DEBUG("Loading texture: %s\n\n", filepath.data());
+    GAME_2D_LOG_DEBUG("Loading texture: %s\n", filepath.data());
 
 
     SDL_Renderer* context = const_cast<SDL_Renderer*>(m_rendererContext);
@@ -36,7 +36,7 @@ void TextureManager::LoadTexture(const std::string& name, const std::string& fil
 
     if (!texture)
     {
-        GAME_2D_LOG_ERROR("Could not load texture, %s\n\n", SDL_GetError());
+        GAME_2D_LOG_ERROR("%s\n", SDL_GetError());
         return;
     }
 
@@ -49,7 +49,7 @@ const SDL_Texture* TextureManager::Get(const std::string& name) const
 {
     if ( !m_textures.contains(name) )
     {
-        GAME_2D_LOG_ERROR("Could not find texture %s\n\n", name.data());
+        GAME_2D_LOG_ERROR("Could not find texture %s\n", name.data());
         return nullptr;
     }
 
@@ -62,7 +62,7 @@ TextureManager::~TextureManager()
 {
     for (auto& [name, texture] : m_textures)
     {
-        GAME_2D_LOG_DEBUG("Destroying texture: %s\n\n", name.data());
+        GAME_2D_LOG_DEBUG("Destroying texture: %s\n", name.data());
         SDL_DestroyTexture( const_cast<SDL_Texture*>(texture) );
     }
 }

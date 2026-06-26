@@ -4,7 +4,7 @@
 #include <box2d/b2_math.h>                          // b2Vec2 class
 
 #include "Entity/Game_Object.hpp"                   // GameObject class
-#include "Media/Sprite.hpp"                         // SpriteCreateInfo struct
+#include "Entity/Sprite.hpp"                        // SpriteCreateInfo struct
 #include "Player_State/Player_State_Manager.hpp"    // PlayerStateManager class
 
 class b2World;
@@ -25,8 +25,8 @@ public:
     // SYMBOLIC CONSTANTS
     // ==================
 
-    static constexpr float WALK_SPEED = 10.0f;
-    static constexpr float JUMP_SPEED = 8.0f;
+    static constexpr float WALK_SPEED = 10.0f; // m/s
+    static constexpr float JUMP_SPEED = 8.0f;  // m/s
 
 public:
     // IMPLEMENTATION
@@ -35,21 +35,23 @@ public:
     // Default constructor
     Player();
 
-    // Copy Constructor
+    // Move Constructor
     //
-    // Note: Due to the limitations of Box2D, shallow copies are performed for the
-    //       physics body, main fixture, and ground sensor. The 'CreateBody',
-    //       'CreateMainFixture', and 'CreateGroundSensor' methods should be called
-    //       to create deep copies of these physics attributes.
-    Player(const Player& player);
+    // Note: 1) If 'player' does not already have a sprite, 'CreateSprite' will have to
+    //          be called.
+    //
+    //       2) If 'player' does not already have a physics body defined, 'CreateBody'
+    //          will have to be called.
+    Player(Player&& player) noexcept;
 
-    // The Assignment Operator
+    // Move Assignment Operator
     //
-    // Note: Due to the limitations of Box2D, shallow copies are performed for the
-    //       physics body, main fixture, and ground sensor. The 'CreateBody',
-    //       'CreateMainFixture', and 'CreateGroundSensor' methods should be called
-    //       to create deep copies of these physics attributes.
-    void operator=(const Player& player);
+    // Note: 1) If 'player' does not already have a sprite 'CreateSprite' will have to
+    //          be called.
+    //
+    //       2) If 'player' does not already have a physics body defined, 'CreateBody'
+    //          will have to be called.
+    void operator=(Player&& player) noexcept;
 
     // Creates the physics body, main fixture, and sensor of the player
     virtual void CreateHitBox(b2World& world, const Json::Value& player) override;
@@ -57,20 +59,14 @@ public:
     // Returns the player's health
     float GetHealth() const;
 
-    // Returns how many fixtures the ground sensor is contacting
-    uint8_t GetGroundContactsCount() const;
+    // Returns the player's impact speed
+    float GetImpactSpeed() const;
 
-    // Returns the player's accumulated fall distance
-    float GetFallDistance() const;
+    // Returns a boolean indicating whether the player is on the ground
+    bool IsGrounded() const;
 
-    // Retunrs the player's current state
-    PLAYER_STATE_TYPE GetCurrentState() const;
-
-    // Returns a reference to player's state manager
-    PlayerStateManager& GetStateManager();
-
-    // Returns a const reference to the player's state manager
-    const PlayerStateManager& GetStateManager() const;
+    // Retunrs a boolean indicating if 'state' is the current player state
+    bool IsState(PlayerStateID state) const;
 
     // Manually sets the health of the player
     void SetHealth(float health);
@@ -80,32 +76,23 @@ public:
     // Note: Damage should be positive
     void ApplyDamage(float externalDamage);
 
-    // Updates the fall distance accumulated by the player
-    void IncrementFallDistance();
+    // Uppdates the player state
+    void SetState(PlayerStateID state);
 
-    // Sets the fall distance variable to 0
-    void ResetFallDistance();
+    // Handles user input
+    void HandleInput();
+
+    // Updates the active state
+    void Update();
 
     // Resets player at spawn point with full health
     virtual void Respawn() override;
 
 private:
-    // ContactListener class requires access to the player ground sensor.
-    // and ground contacts count.
+    // ContactListener class requires access to the player ground sensor and ground
+    // contacts count.
     friend class ContactListener;
 
-
-    // The previous position of the player
-    //
-    // Note: The previous position is used for calculating the player's
-    //       accumulated fall distance.
-    b2Vec2 m_prevPos;
-
-    // The maximum health of the player
-    //
-    // Note: The maximum health of the player can be modified (e.g
-    //       When the player receives a power-up)
-    float m_maxHealth;
 
     // The health of the player
     //
@@ -113,25 +100,21 @@ private:
     //       the maximum health.
     float m_health;
 
-    // The player's fall distance
-    //
-    // Note: The 'CalculateFallDistance' method must be called while the
-    //       game is updating in order for the distance to be calculated.
-    float m_fallDistance;
-
     // The player is contacting the ground
     //
-    // Note: This variable is not populated upon initialization. The
-    //       'CreateGroundSensor' method must be called with the
-    //       corresponding Box2D fixture sensor.
+    // Note: This field is initialized upon calling 'CreateHitBox'
     b2Fixture* m_groundSensor;
 
     // The number of fixture contacts with the sesnsor
     //
-    // Note: If  the value is greater than 0, the ground sensor is contacting
-    //       another fixture. This variable is necessary because more than
-    //       one fixture can be in contact with the sensor at a given time.
+    // Note: This field is modfied by the 'ContactListener' class
     uint8_t m_groundContacts;
+
+    // The vertical speed of the player when the ground sensor collides with
+    // another body.
+    //
+    // Note: This field is modified by the 'ContactListener' class
+    float m_impactSpeed;
 
     // Finite state machine that manages the current state of the game
     PlayerStateManager m_stateManager;

@@ -37,7 +37,7 @@ void* operator new(size_t size) noexcept(false)
     s_totalMemory += size;
 
     GAME_2D_LOG_VERBOSE("Allocating %u bytes of memory", (unsigned int)size);
-    GAME_2D_LOG_VERBOSE("Total Heap Memory Allocated: %u bytes\n\n", (unsigned int)s_totalMemory);
+    GAME_2D_LOG_VERBOSE("Total Heap Memory Allocated: %u bytes\n", (unsigned int)s_totalMemory);
 
     return allocation;
 }
@@ -51,7 +51,7 @@ void operator delete(void* memory, size_t size) noexcept
     s_totalMemory -= size;
 
     GAME_2D_LOG_VERBOSE( "Deallocating %lu bytes of memory", (long unsigned int)size );
-    GAME_2D_LOG_VERBOSE( "Total Heap Memory Allocated: %lu bytes\n\n", (long unsigned int)s_totalMemory );
+    GAME_2D_LOG_VERBOSE( "Total Heap Memory Allocated: %lu bytes\n", (long unsigned int)s_totalMemory );
 }
 
 
@@ -68,7 +68,7 @@ Json::Value LoadJson(const std::string& filepath)
 
     if ( !Json::parseFromStream(builder, s_fileIn, &root, &error) )
     {
-        GAME_2D_LOG_ERROR("Couldn't open %s\n%s\n\n", filepath.data(), error.c_str());
+        GAME_2D_LOG_ERROR("Couldn't open %s\n%s\n", filepath.data(), error.c_str());
         s_fileIn.clear();
     }
 
@@ -89,7 +89,7 @@ void OverWriteJson(const std::string& filepath, Json::Value& root)
 
      if ( !s_fileOut.is_open() )
     {
-        GAME_2D_LOG_ERROR("Could not open %s.\n\n", filepath.data());
+        GAME_2D_LOG_ERROR("Could not open %s.\n", filepath.data());
         return;
     }
 

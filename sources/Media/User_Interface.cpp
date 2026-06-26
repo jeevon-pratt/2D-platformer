@@ -46,7 +46,7 @@ void UserInterface::operator=(const UserInterface& interface)
 
 void UserInterface::AddBackground(const SpriteCreateInfo& info)
 {
-    m_background = Sprite(info);
+    m_background = info;
 }
 
 

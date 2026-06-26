@@ -11,13 +11,13 @@
 #include "Entity/Enemy.hpp"                         // Enemy class
 #include "Entity/Game_Object.hpp"                   // GameObject class
 #include "Entity/Player.hpp"                        // Player class
+#include "Entity/Sprite.hpp"                        // Sprite class
 #include "Game_State/Game_State.hpp"                // GAME_STATE_TYPE enum
 #include "Game_State/Game_State_Manager.hpp"        // GameStateManager class
 #include "Media/Audio.hpp"                          // AudioManager class
 #include "Media/Camera.hpp"                         // Camera class
 #include "Media/Texture_Manager.hpp"                // TextureManager class
 #include "Media/Renderer.hpp"                       // Renderer class
-#include "Media/Sprite.hpp"                         // Sprite class
 #include "Media/Text.hpp"                           // FontManager class
 #include "Media/User_Interface.hpp"                 // UserInterface class
 #include "Media/Window.hpp"                         // Window class
@@ -101,8 +101,7 @@ private:
     friend class Level4State;
     friend class Level5State;
 
-
-
+private:
     // Windows and Widgets
     // ===================
 

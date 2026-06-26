@@ -2,7 +2,7 @@
 
 #include "Entity/Game_Object.hpp"   // GameObject class
 #include "Entity/Player.hpp"        // Player class
-#include "Media/Sprite.hpp"         // SpriteCreateInfo struct
+#include "Entity/Sprite.hpp"        // SpriteCreateInfo struct
 
 
 /**
@@ -10,6 +10,12 @@
  */
 class Enemy final : public GameObject
 {
+public:
+    // SYMBOLIC CONSTANTS
+    // ==================
+
+    static constexpr float CHASE_SPEED = 10.0f;  // m/s
+
 public:
     // IMPLEMENTATION
     // ==============
@@ -31,27 +37,10 @@ public:
     // For chasing the player
     void Chase(const Player& player);
 
-    // For attacking the player
-    void Attack(Player& player);
-
-    // Indicates if the enemy is in the attack state
-    bool IsAttacking() const;
-
-    // Determines if the enemy attack cooldown has started
-    bool IsCoolDownReset() const;
-
-    // Determines if the enemy attack cooldown has ended
-    bool IsCoolDownExpired() const;
-
     // Resets enemy at spawn point with full health
     virtual void Respawn() override;
 
 private:
-    // The maximum health of the enemy
-    //
-    // Note: The maximum health of the enemy cannot be mmodified.
-    float m_maxHealth;
-
     // The health of the enemy
     //
     // Note: The health cannont be negative nor can it be greater

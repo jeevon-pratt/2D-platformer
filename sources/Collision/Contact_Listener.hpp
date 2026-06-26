@@ -1,11 +1,10 @@
 #pragma once
 
-#include <box2d/b2_world_callbacks.h>   // b2ContactListener class, b2ContactImpulse class
+#include <box2d/b2_world_callbacks.h>   // b2ContactListener class
 
-class  b2Contact;
-class  b2Fixture;
-struct b2Manifold;
-class  Player;
+class b2Contact;
+class b2Fixture;
+class Player;
 
 
 /**
@@ -18,13 +17,7 @@ public:
     // ==============
 
     // Default constructor
-    ContactListener();
-
-    // Links the Box2D contact listener to the player's ground information.
-    //
-    // Note: This method should be called before calling the game loop. The
-    //       ground sensor should not be null.
-    void LinkToPlayer(Player& player);
+    ContactListener() = default;
 
 private:
     // CALLBACK FUNCTIONS
@@ -53,12 +46,4 @@ private:
 private:
     // This is required for the Box2D collision call back.
     friend class b2World;
-
-    // Pointer to the player's ground sensor
-    b2Fixture* m_sensorData;
-
-    // Pointer to the player's groiund contact count
-    uint8_t* m_contactsData;
-
-    // Note: These variables are populated by calling the 'LinkToPlayer' method.
 };

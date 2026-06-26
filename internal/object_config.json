@@ -6,7 +6,7 @@
         "animation": "../../assets/dev/mother_tick.json",
         "body_type": 2,
         "shape": "box",
-        "density": 50.0,
+        "density": 5.0,
         "friction": 1000.0,
         "fixed_rotation": true,
         "position": [0.7, 16.0],

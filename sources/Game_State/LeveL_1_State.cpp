@@ -3,14 +3,15 @@
 #include <SDL3/SDL_pixels.h>            // SDL_Color struct
 #include <SDL3_ttf/SDL_ttf.h>           // TTF_Font struct
 
-#include <iostream>                     // std::cout
+#include <print>                        // std::println
 #include <utility>                      // std::pair
 
 #include "Core/Game_2D.hpp"             // Game2D class
 #include "Entity/Enemy.hpp"             // Enemy class
 #include "Entity/Game_Object.hpp"       // Game class
+#include "Entity/Sprite.hpp"            // Sprite class
 #include "Game_State/Game_State.hpp"    // Game state classes and enum
-#include "Media/Sprite.hpp"             // Sprite class
+#include "Utility/Log.hpp"              // GAME_2D_LOG_DEBUG macro function
 #include "Utility/Save_System.hpp"      // SaveFileData struct, WriteToSaveFile function
 
 
@@ -20,6 +21,8 @@
 
 void Level1State::OnEnter(Game2D& app)
 {
+    GAME_2D_LOG_DEBUG("Entering Level 1 State\n");
+
     Window::HideCursor();
 }
 
@@ -29,7 +32,7 @@ void Level1State::OnHandle(Game2D& app)
 {
     static SDL_Event s_event;
 
-    while ( SDL_PollEvent(&s_event) )
+    while (SDL_PollEvent(&s_event))
     {
         if (s_event.type == SDL_EVENT_QUIT)
         {
@@ -40,10 +43,10 @@ void Level1State::OnHandle(Game2D& app)
 
         app.m_window.HandleInput(s_event);
         app.m_levelUI.HandleInput(s_event);
-        app.m_perfMonitor.HandleInput(s_event);
+        app.m_renderer.HandleInput(s_event);
     }
 
-    app.m_player.GetStateManager().HandleInput();
+    app.m_player.HandleInput();
 }
 
 
@@ -65,16 +68,16 @@ void Level1State::OnUpdate(Game2D& app)
     // Update Player
     // =============
 
-    app.m_player.GetStateManager().Update();
+    app.m_player.Update();
+
+    bool     hitGround  = app.m_player.IsState(HIT_GROUND_STATE);
+    bool     playerDead = app.m_player.IsState(DEAD_STATE);
+    b2Vec2   playerPos  = app.m_player.GetPosition();
+    uint16_t winWidth   = app.m_window.GetWidth();
+    uint16_t winHeight  = app.m_window.GetHeight();
 
 
-    PLAYER_STATE_TYPE playerState = app.m_player.GetCurrentState();
-    b2Vec2            playerPos   = app.m_player.GetPosition();
-    uint16_t          winWidth    = app.m_window.GetWidth();
-    uint16_t          winHeight   = app.m_window.GetHeight();
-
-
-    if (playerState == HIT_GROUND_STATE)
+    if (hitGround)
         app.m_audioManager.PlayAudio("hit_ground");
 
     if (playerPos.y > -200.0f)
@@ -124,9 +127,9 @@ void Level1State::OnUpdate(Game2D& app)
     app.m_physicsWorld->Step(Game2D::TIME_STEP * 0.001f, VEL_ITR, POS_ITR);
 
 
-    if (playerState == DEAD_STATE)
+    if (playerDead)
     {
-        std::cout << "You have died :(\n";
+        std::println("You have died :(");
 
         app.m_audioManager.PlayAudio("death_sound");
 
@@ -169,7 +172,7 @@ void Level1State::OnRender(Game2D& app)
     for (const auto& [sprite, pos] : app.m_foregroundLayer)
         app.m_renderer.Render(sprite, pos, camTransform);
 
-    app.m_perfMonitor.Render();
+    app.m_renderer.Render( app.m_perfMonitor );
     app.m_renderer.Display();
     
     app.m_perfMonitor.CalculateFrameRate();
@@ -179,6 +182,8 @@ void Level1State::OnRender(Game2D& app)
 
 void Level1State::OnExit(Game2D& app)
 {
+    GAME_2D_LOG_DEBUG("Exiting Level 1 State\n");
+
     app.m_audioManager.PauseAudio("8_bit_music");
 
     SaveFileData data;

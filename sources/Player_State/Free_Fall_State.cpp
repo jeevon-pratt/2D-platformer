@@ -10,7 +10,7 @@
 
 void FreeFallState::OnEnter(Player& player)
 {
-    // No Functionality
+    player.ResetAnimation("fall");
 }
 
 
@@ -37,44 +37,21 @@ void FreeFallState::OnHandle(Player& player)
 
 void FreeFallState::OnUpdate(Player& player)
 {
-    if ( ApproxEq(player.GetHealth(), 0.0f) )
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(DEAD_STATE);
-    }
+    bool isDead    = ApproxEq(player.GetHealth(), 0.0f);
+    bool hitGround = player.IsGrounded()  && (player.GetVelocity().y <= 0.0f);
 
-    else if ( player.GetGroundContactsCount() > 0
-              && player.GetVelocity().y <= 0.0f )
-    {
-        // Note: When a user presses the jump key, the player enters the
-        //       'FREE_FALL_STATE' but for one or two game updates, the player
-        //       is still contacting the ground.
-        //
-        //       To prevent the player from unnecessarliy transitioning into
-        //       the 'HIT_GROUND_STATE' after jumping, there is a check to
-        //       ensure that the player is not currently moving upwards.
+    if (isDead)
+        player.SetState(DEAD_STATE);
 
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(HIT_GROUND_STATE);
-    }
+    else if (hitGround)
+        player.SetState(HIT_GROUND_STATE);
 
-    else if ( player.GetGroundContactsCount() == 0
-              && player.GetVelocity().y >= 0.0f )
-    {
-        player.GetSprite().PlayAnimation("default"); // "jump"
-    }
-
-    else if ( player.GetGroundContactsCount() == 0
-              && player.GetVelocity().y < 0.0f )
-    {
-        player.GetSprite().PlayAnimation("default"); // "fall"
-        player.IncrementFallDistance();
-    }
+    player.PlayAnimation("fall");
 }
 
 
 
 void FreeFallState::OnExit(Player& player)
 {
-    // No Functionality
+    // No functionality
 }

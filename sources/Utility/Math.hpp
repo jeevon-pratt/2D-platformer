@@ -6,8 +6,7 @@
 #include <type_traits>      // std::is_integral
 
 struct b2Vec2;
-
-class Sprite;
+class  Sprite;
 
 
 // ***************************

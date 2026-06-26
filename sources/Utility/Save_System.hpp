@@ -4,7 +4,7 @@
 
 #include <string>                       // std::string
 
-#include "Game_State/Game_State.hpp"    // GAME_STATE_TYPE enum
+#include "Game_State/Game_State.hpp"    // GameStateID enum
 
 
 // ******************
@@ -16,9 +16,9 @@
  */
 struct SaveFileData
 {
-    GAME_STATE_TYPE level;          // The current level of the game
-    b2Vec2          playerPos;      // The current position of the player
-    float           playerHealth;   // The current health of the player
+    GameStateID level;          // The current level of the game
+    b2Vec2      playerPos;      // The current position of the player
+    float       playerHealth;   // The current health of the player
 };
 
 

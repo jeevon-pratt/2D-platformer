@@ -1,4 +1,5 @@
-#include <string>           // std::string, std::to_string
+#include <format>           // std::format
+#include <string>           // std::string
 
 #include "Media/Text.hpp"   // FontManager class
 #include "Utility/Log.hpp"  // GAME_2D_LOG_DEBUG and GAME_2D_LOG_ERROR macro functions
@@ -10,15 +11,15 @@
 
 void FontManager::LoadFont(const std::string& name, const std::string& filepath, uint8_t size)
 {
-    GAME_2D_LOG_DEBUG("Loading font: %s (point size: %d)\n\n", filepath.data(), size);
+    GAME_2D_LOG_DEBUG("Loading font: %s (point size: %d)\n", filepath.data(), size);
 
      // The font size is incorporated into the hash table key
-    std::string key  = std::string(name) + "_" + std::to_string(size);
+    std::string key  = std::format("{}_{}", name, size);
     TTF_Font*   font = TTF_OpenFont(filepath.data(), size);
 
     if (!font)
     {
-        GAME_2D_LOG_ERROR("Could not load font, %s\n\n", SDL_GetError());
+        GAME_2D_LOG_ERROR("%s\n", SDL_GetError());
         return;
     }
 
@@ -45,7 +46,7 @@ FontManager::~FontManager()
 {
     for (auto& [name, font] : m_fonts)
     {
-        GAME_2D_LOG_DEBUG("Destroying font: %s\n\n", name.data());
+        GAME_2D_LOG_DEBUG("Destroying font: %s\n", name.data());
         TTF_CloseFont( const_cast<TTF_Font*>(font) );
     }
 }

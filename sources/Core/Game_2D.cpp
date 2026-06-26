@@ -6,7 +6,7 @@
 #ifndef __GNUC__
 #include <filesystem>               // std::filesystem
 #endif
-#include <print>                    // std::print
+#include <print>                    // std::println
 #include <string>                   // std::string
 
 #include "Core/Game_2D.hpp"         // Game2D class
@@ -55,11 +55,13 @@ Game2D::Game2D():
     m_window         ("2D_PLATFORMER", WINDOW_WIDTH, WINDOW_HEIGHT),
     m_renderer       (m_window),
     m_textureManager (m_renderer),
-    m_physicsWorld   ( std::make_unique<b2World>(GRAVITY) ),
-    m_perfMonitor    (m_renderer)
+    m_physicsWorld   ( std::make_unique<b2World>(GRAVITY) )
 {
+    m_physicsWorld->SetContactListener(&m_contactListener);
+
     m_objects.reserve(MAX_OBJECTS);
     m_enemies.reserve(MAX_ENEMIES);
+
 
     LoadAssets();
 
@@ -69,15 +71,15 @@ Game2D::Game2D():
     // CreateLevelUI();
     CreateObjects();
     CreateLayers();
-
-    m_stateManager.LinkToGame(*this);
 }
 
 
 
 void Game2D::Init()
 {
-    // Set the working directory
+    // Setting Working Directory
+    // =========================
+
 #ifndef __GNUC__
     std::filesystem::path CURRENT_FILE = __FILE__;
     std::filesystem::path WORKING_DIR  = CURRENT_FILE/BINARY_DIR;
@@ -86,24 +88,34 @@ void Game2D::Init()
 #endif
 
 
-    // Initialize the log system
+    // Initialization of Log System
+    // ============================
+
 #ifdef DEBUG
     if ( !InitLog(LOG_FILE_PATH, LOG_PRIORITY_DEBUG) )
-        std::print("\aERROR: %s could not be accessed\n", LOG_FILE_PATH);
+        std::println("\aERROR: {} could not be accessed", LOG_FILE_PATH);
 #endif
 
 
-    // Initialize the save system
-    if ( !OpenSaveFile(SAVE_FILE_PATH) )
-        GAME_2D_LOG_CRITICAL("%s could not be accessed\n\n", SAVE_FILE_PATH);
+    // Initialization of SDL3
+    // ======================
 
+    GAME_2D_LOG_DEBUG("Initializing SDL3\n");
 
-    // Initialize the SDL subsystems
     if ( !SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) || !TTF_Init() )
     {
-        GAME_2D_LOG_CRITICAL("%s\n\n", SDL_GetError());
+        GAME_2D_LOG_CRITICAL("%s\n", SDL_GetError());
         std::exit(EXIT_FAILURE);
     }
+
+
+    // Initialization of Save System
+    // =============================
+
+    GAME_2D_LOG_DEBUG("Initializing save system\n");
+
+    if (!OpenSaveFile(SAVE_FILE_PATH))
+        GAME_2D_LOG_CRITICAL("%s could not be accessed\n", SAVE_FILE_PATH);
 }
 
 
@@ -119,9 +131,12 @@ void Game2D::Run()
 
 void Game2D::CleanUp()
 {
+    GAME_2D_LOG_DEBUG("Deinitializing save system\n");
+    CloseSaveFile();
+
+    GAME_2D_LOG_DEBUG("Deinitializing SDL3\n");
     TTF_Quit();
     SDL_Quit();
-    CloseSaveFile();
 
 #ifdef DEBUG
     CloseLogFile();
@@ -136,15 +151,15 @@ void Game2D::CleanUp()
 
 void Game2D::RunInternal()
 {
-    float accumulator = 0.0f;
+    float    accumulator = 0.0f;
     uint32_t currentTime = SDL_GetTicks();
 
     m_stateManager.PopState();
     m_stateManager.PushState(MAIN_MENU_STATE);
 
-    while (m_stateManager.GetCurrentState() != QUIT_STATE)
+    while ( !m_stateManager.IsState(QUIT_STATE) )
     {
-        uint32_t newTime = SDL_GetTicks();
+        uint32_t newTime   = SDL_GetTicks();
         uint32_t frameTime = (newTime - currentTime);
 
         if (frameTime > 250)
@@ -155,13 +170,13 @@ void Game2D::RunInternal()
 
         while (accumulator >= TIME_STEP)
         {
-            m_stateManager.HandleEvents();
-            m_stateManager.Update();
+            m_stateManager.HandleEvents(*this);
+            m_stateManager.Update(*this);
 
             accumulator -= TIME_STEP;
         }
 
-        m_stateManager.Render();
+        m_stateManager.Render(*this);
     }
 }
 
@@ -408,9 +423,6 @@ void Game2D::CreateObjects()
 
     m_player.CreateSprite(m_textureManager, root["player"]);
     m_player.CreateHitBox(*m_physicsWorld, root["player"]);
-
-    m_contactListener.LinkToPlayer(m_player);
-    m_physicsWorld->SetContactListener(&m_contactListener);
 
 
     // Game Objects

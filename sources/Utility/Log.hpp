@@ -9,7 +9,7 @@
 // LOG PRIORITY
 // ************
 
-enum LOG_PRIORITY
+enum LogPriority
 {
     LOG_PRIORITY_INVALID = 0,
     LOG_PRIORITY_TRACE,
@@ -35,7 +35,7 @@ enum LOG_PRIORITY
 //        2) This function should be called before attempting to use the SDL logging system
 //           or the custom logging macro functions. Otherwise, all debugging message will
 //           be output to the console instead of a log file.
-bool InitLog(const std::string& filepath, LOG_PRIORITY priority);
+bool InitLog(const std::string& filepath, LogPriority priority);
 
 
 // Returns a boolean indicating if the logging system is initialized

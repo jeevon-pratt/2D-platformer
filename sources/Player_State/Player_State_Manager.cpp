@@ -1,7 +1,7 @@
 #include "Entity/Player.hpp"                        // Player class
 #include "Player_State/Player_State.hpp"            // Player state, PlayerStateManager classes and State enums
 #include "Player_State/Player_State_Manager.hpp"    // PlayerStateManager class
-#include "Utility/Assert.hpp"                       // GAME_2D_ASSERT_MSG macro function
+#include "Utility/Assert.hpp"                       // GAME_2D_ASSERT macro function
 
 
 // **************
@@ -9,21 +9,20 @@
 // **************
 
 PlayerStateManager::PlayerStateManager():
-    m_playerData   (nullptr),
-    m_currentState (IDLE_STATE)
+    m_state (IDLE_STATE)
 {
     // Create Player State Lookup Table
     // ================================
 
     m_stateTable.reserve(MAX_PLAYER_STATES);
 
-    m_stateTable.emplace( IDLE_STATE,        std::make_unique<IdleState>()      );
-    m_stateTable.emplace( WALK_STATE,        std::make_unique<WalkState>()      );
-    m_stateTable.emplace( JUMP_STATE,        std::make_unique<JumpState>()      );
-    m_stateTable.emplace( FREE_FALL_STATE,   std::make_unique<FreeFallState>()  );
-    m_stateTable.emplace( HIT_GROUND_STATE,  std::make_unique<HitGroundState>() );
-    m_stateTable.emplace( ATTACK_STATE,      std::make_unique<AttackState>()    );
-    m_stateTable.emplace( DEAD_STATE,        std::make_unique<DeadState>()      );
+    m_stateTable.emplace( IDLE_STATE,        std::make_shared<IdleState>()      );
+    m_stateTable.emplace( WALK_STATE,        std::make_shared<WalkState>()      );
+    m_stateTable.emplace( JUMP_STATE,        std::make_shared<JumpState>()      );
+    m_stateTable.emplace( FREE_FALL_STATE,   std::make_shared<FreeFallState>()  );
+    m_stateTable.emplace( HIT_GROUND_STATE,  std::make_shared<HitGroundState>() );
+    m_stateTable.emplace( ATTACK_STATE,      std::make_shared<AttackState>()    );
+    m_stateTable.emplace( DEAD_STATE,        std::make_shared<DeadState>()      );
 
     // Set the initial player state
     // ============================
@@ -33,21 +32,14 @@ PlayerStateManager::PlayerStateManager():
 
 
 
-void PlayerStateManager::LinkToPlayer(Player& player)
+bool PlayerStateManager::IsState(PlayerStateID state) const
 {
-    m_playerData = &player;
+    return (m_state == state);
 }
 
 
 
-PLAYER_STATE_TYPE PlayerStateManager::GetCurrentState() const
-{
-    return m_currentState;
-}
-
-
-
-void PlayerStateManager::PushState(PLAYER_STATE_TYPE newState)
+void PlayerStateManager::PushState(PlayerStateID newState)
 {
     m_stack.push(newState);
 }
@@ -56,40 +48,43 @@ void PlayerStateManager::PushState(PLAYER_STATE_TYPE newState)
 
 void PlayerStateManager::PopState()
 {
-    GAME_2D_ASSERT_MSG(!m_stack.empty(), "Player state stack is empty.");
+    GAME_2D_ASSERT(!m_stack.empty());
     
     m_stack.pop();
 }
 
 
 
-void PlayerStateManager::HandleInput()
+void PlayerStateManager::HandleInput(Player& player)
 {
-    GAME_2D_ASSERT_MSG(m_playerData, "Player state manager is not properly initialized.");
-
-    m_stateTable.at(m_currentState)
-        ->OnHandle(*m_playerData);
+    GetCurrentState()->OnHandle(player);
 }
 
 
 
-void PlayerStateManager::Update()
+void PlayerStateManager::Update(Player& player)
 {
-    GAME_2D_ASSERT_MSG(m_playerData, "Player state manager is not properly initialized.");
-
-    if (m_currentState != m_stack.top())
+    if (m_state != m_stack.top())
     {
         // Exit current state
-        m_stateTable.at(m_currentState)
-            ->OnExit(*m_playerData);
+        GetCurrentState()->OnExit(player);
 
         // Enter new state
-        m_currentState = m_stack.top();
+        m_state = m_stack.top();
 
-        m_stateTable.at(m_currentState)
-            ->OnEnter(*m_playerData);
+        GetCurrentState()->OnEnter(player);
     }
 
-    m_stateTable.at(m_currentState)
-        ->OnUpdate(*m_playerData);
+    GetCurrentState()->OnUpdate(player);
+}
+
+
+
+// ******************
+// INTERNAL FUNCTIONS
+// ******************
+
+std::shared_ptr<PlayerState> PlayerStateManager::GetCurrentState()
+{
+    return m_stateTable.at( m_state );
 }

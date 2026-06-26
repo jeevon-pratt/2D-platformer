@@ -3,14 +3,14 @@
 class Game2D;
 
 
-// ****************
-// GAME STATE TYPES
-// ****************
+// *************
+// GAME STATE ID
+// *************
 
 /**
  * Enumeration for denoting game state types
  */
-enum GAME_STATE_TYPE
+enum GameStateID
 {
     // Non-level states
     // ================

@@ -1,5 +1,6 @@
 #include "Entity/Player.hpp"                // Player class
 #include "Player_State/Player_State.hpp"    // Player state classes and enum
+#include "Utility/Math.hpp"                 // ApproxEq function
 
 
 // **************
@@ -8,7 +9,7 @@
 
 void DeadState::OnEnter(Player& player)
 {
-    // No functionality
+    player.ResetAnimation("dead_idle");
 }
 
 
@@ -21,14 +22,13 @@ void DeadState::OnHandle(Player& player)
 
 
 void DeadState::OnUpdate(Player& player)
-{
-    player.GetSprite().PlayAnimation("default"); // "dead"
+{    
+    bool isDead = ApproxEq(player.GetHealth(), 0.0f);
 
-    if (player.GetHealth() > 0.0f)
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(IDLE_STATE);
-    }
+    if (!isDead)
+        player.SetState(IDLE_STATE);
+
+    player.PlayAnimation("dead_idle");
 }
 
 

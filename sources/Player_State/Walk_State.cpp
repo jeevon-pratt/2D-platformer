@@ -4,78 +4,97 @@
 #include "Utility/Math.hpp"                 // ApproxEq function
 
 
+// ****************
+// HELPER FUNCTIONS
+// ****************
+
+static void WalkRight(Player& player)
+{
+    if (player.IsInverted())
+        player.Invert();
+
+    if (!player.IsGrounded())
+        return;
+
+    b2Vec2 velocity;
+    velocity.x = Player::WALK_SPEED;
+    velocity.y = 0.0f;
+
+    player.SetVelocity(velocity);
+}
+
+
+
+static void WalkLeft(Player& player)
+{
+    if (!player.IsInverted())
+        player.Invert();
+
+    if (!player.IsGrounded())
+        return;
+
+    b2Vec2 velocity;
+    velocity.x = -Player::WALK_SPEED;
+    velocity.y = 0.0f;
+
+    player.SetVelocity(velocity);
+}
+
+
+
 // **************
 // IMPLEMENTATION
 // **************
 
 void WalkState::OnEnter(Player& player)
 {
-    // No Functionality
+    player.ResetAnimation("walk");
 }
 
 
 
 void WalkState::OnHandle(Player& player)
 {
-    if (g_keyState[SCANCODE_A])
-    {
-        if (!player.IsInverted())
-            player.Invert();
-
-        player.GetSprite().PlayAnimation("walk");
-        player.SetVelocity( b2Vec2(-Player::WALK_SPEED, 0.0f) );
-    }
-    
-
-    if (g_keyState[SCANCODE_D])
-    {
-        if (player.IsInverted())
-            player.Invert();
-
-        player.GetSprite().PlayAnimation("walk");
-        player.SetVelocity( b2Vec2(Player::WALK_SPEED, 0.0f) );
-    }
-
-
-    if (g_keyState[SCANCODE_W])
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(JUMP_STATE);
-    }
-
-
-    if (g_keyState[SCANCODE_F])
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(ATTACK_STATE);
-    }
-
-
     if (!g_keyState[SCANCODE_A]
         && !g_keyState[SCANCODE_D]
         && !g_keyState[SCANCODE_W]
         && !g_keyState[SCANCODE_F])
     {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(IDLE_STATE);
+        player.SetState(IDLE_STATE);
+        return;
     }
+
+
+    if (g_keyState[SCANCODE_A])
+        WalkLeft(player);
+    
+
+    if (g_keyState[SCANCODE_D])
+        WalkRight(player);
+
+
+    if (g_keyState[SCANCODE_W])
+        player.SetState(JUMP_STATE);
+
+
+    if (g_keyState[SCANCODE_F])
+        player.SetState(ATTACK_STATE);
 }
 
 
 
 void WalkState::OnUpdate(Player& player)
 {
-    if ( ApproxEq(player.GetHealth(), 0.0f) )
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(DEAD_STATE);
-    }
+    bool isDead    = ApproxEq(player.GetHealth(), 0.0f);
+    bool isFalling = !player.IsGrounded() && (player.GetVelocity().y <= 0.0f);
 
-    else if ( player.GetGroundContactsCount() == 0 )
-    {
-        player.GetStateManager().PopState();
-        player.GetStateManager().PushState(FREE_FALL_STATE);
-    }
+    if (isDead)
+        player.SetState(DEAD_STATE);
+
+    else if (isFalling)
+        player.SetState(FREE_FALL_STATE);
+
+    player.PlayAnimation("walk");
 }
 
 

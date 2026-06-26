@@ -7,10 +7,11 @@
 #include <json/value.h>                 // Json:::Value class
 
 #include <numbers>                      // std::numbers:pi constant
+#include <utility>                      // std::move
 #include <vector>                       // std::vector
 
 #include "Entity/Game_Object.hpp"       // GameObject class
-#include "Media/Sprite.hpp"             // SpriteCreateInfo struct
+#include "Entity/Sprite.hpp"            // SpriteCreateInfo struct
 #include "Media/Texture_Manager.hpp"    // TextureManager class
 #include "Utility/Assert.hpp"           // GAME_2D_ASSERT macro function
 #include "Utility/Log.hpp"              // GAME_2D_LOG_ERROR macro function
@@ -21,33 +22,41 @@
 // **************
 
 GameObject::GameObject():
-    m_isInverted (false),
-    m_body       (nullptr),
-    m_fixture    (nullptr),
-    m_spawn      (0.0f, 0.0f)
+    m_inverted (false),
+    m_body     (nullptr),
+    m_fixture  (nullptr),
+    m_spawn    (0.0f, 0.0f)
 {
 }
 
 
 
-GameObject::GameObject(const GameObject& object):
-    m_sprite     (object.m_sprite),
-    m_isInverted (false),
-    m_body       (object.m_body),
-    m_fixture    (object.m_fixture),
-    m_spawn      (object.m_spawn)
+GameObject::GameObject(GameObject&& object) noexcept:
+    m_sprite   (object.m_sprite),
+    m_inverted (false),
+    m_body     (object.m_body),
+    m_fixture  (object.m_fixture),
+    m_spawn    (object.m_spawn)
 {
+    object.m_body    = nullptr;
+    object.m_fixture = nullptr;
 }
 
 
 
-void GameObject::operator=(const GameObject& object)
+void GameObject::operator=(GameObject&& object) noexcept
 {
-    m_sprite     = object.m_sprite;
-    m_isInverted = false;
-    m_body       = object.m_body;
-    m_fixture    = object.m_fixture;
-    m_spawn      = object.m_spawn;
+    if (this == &object)
+        return;
+
+    m_sprite   = object.m_sprite;
+    m_inverted = false;
+    m_body     = object.m_body;
+    m_fixture  = object.m_fixture;
+    m_spawn    = object.m_spawn;
+
+    object.m_body    = nullptr;
+    object.m_fixture = nullptr;
 }
 
 
@@ -63,7 +72,7 @@ void GameObject::CreateSprite(const TextureManager& manager, const Json::Value& 
     info.screenCoord  = false;
     info.scrollFactor = 1.0f;
 
-    m_sprite = Sprite(info);
+    m_sprite = info;
 }
 
 
@@ -76,10 +85,11 @@ void GameObject::CreateHitBox(b2World& world, const Json::Value& object)
     uint8_t type  = object["body_type"].asUInt();
 
     b2BodyDef bodyDef;
-    bodyDef.type          = static_cast<b2BodyType>(type);
-    bodyDef.fixedRotation = object["fixed_rotation"].asBool();
-    bodyDef.position      = b2Vec2(xPos, yPos);
-    bodyDef.angle         = angle * static_cast<float>(std::numbers::pi / 180.0);
+    bodyDef.type             = static_cast<b2BodyType>(type);
+    bodyDef.fixedRotation    = object["fixed_rotation"].asBool();
+    bodyDef.position         = b2Vec2(xPos, yPos);
+    bodyDef.angle            = angle * static_cast<float>(std::numbers::pi / 180.0);
+    bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(this);
 
     m_body  = world.CreateBody(&bodyDef);
     m_spawn = b2Vec2(xPos, yPos);
@@ -137,6 +147,41 @@ b2Vec2 GameObject::GetSpawnPoint() const
 
 
 
+const SDL_FRect& GameObject::GetSourceRect() const
+{
+    return m_sprite.GetSourceRect();
+}
+
+
+
+const SDL_Texture* GameObject::GetTexture() const
+{
+    return m_sprite.GetTexture();
+}
+
+
+
+float GameObject::GetFrameWidth() const
+{
+    return m_sprite.GetFrameWidth();
+}
+
+
+
+float GameObject::GetFrameHeight() const
+{
+    return m_sprite.GetFrameHeight();
+}
+
+
+
+float GameObject::GetScrollFactor() const
+{
+    return m_sprite.GetScrollFactor();
+}
+
+
+
 void GameObject::SetAngle(float angle)
 {
     GAME_2D_ASSERT(m_body && m_fixture);
@@ -182,25 +227,16 @@ void GameObject::SetVelocity(b2Vec2 force)
 
 
 
-void GameObject::ApplyForceToCenter(b2Vec2 force)
-{
-    GAME_2D_ASSERT(m_body && m_fixture);
-
-    m_body->ApplyForceToCenter(force, true);
-}
-
-
-
 void GameObject::Invert()
 {
-    m_isInverted = !m_isInverted;
+    m_inverted = !m_inverted;
 }
 
 
 
 bool GameObject::IsInverted() const
 {
-    return m_isInverted;
+    return m_inverted;
 }
 
 
@@ -214,6 +250,20 @@ void GameObject::Respawn()
     m_body->SetTransform(m_spawn, 0.0f);
     m_body->SetLinearVelocity( b2Vec2(0.0f, 0.0f) );
     m_body->ApplyForceToCenter(gravity, true);
+}
+
+
+
+void GameObject::ResetAnimation(const std::string& name)
+{
+    m_sprite.ResetAnimation(name);
+}
+
+
+
+void GameObject::PlayAnimation(const std::string& name)
+{
+    m_sprite.PlayAnimation(name);
 }
 
 

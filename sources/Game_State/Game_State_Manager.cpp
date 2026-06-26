@@ -1,33 +1,31 @@
 #include "Core/Game_2D.hpp"                     // Game2D class
 #include "Game_State/Game_State.hpp"            // Game state classes and enum
 #include "Game_State/Game_State_Manager.hpp"    // GameStateManager class
-#include "Utility/Assert.hpp"                   // GAME_2D_ASSERT_MSG macro function
-
+#include "Utility/Assert.hpp"                   // GAME_2D_ASSERT macro function
 
 // **************
 // IMPLEMENTATION
 // **************
 
 GameStateManager::GameStateManager():
-    m_gameData     (nullptr),
-    m_currentState (NULL_STATE)
+    m_state (NULL_STATE)
 {
     // Create Game State Lookup Table
     // ==============================
 
     m_stateTable.reserve(MAX_GAME_STATES);
 
-    m_stateTable.emplace( NULL_STATE,      std::make_unique<NullState>()     );
-    m_stateTable.emplace( MAIN_MENU_STATE, std::make_unique<MainMenuState>() );
-    m_stateTable.emplace( SETTINGS_STATE,  std::make_unique<SettingsState>() );
-    m_stateTable.emplace( PAUSED_STATE,    std::make_unique<PausedState>()   );
-    m_stateTable.emplace( LEVEL_1_STATE,   std::make_unique<Level1State>()   );
-    m_stateTable.emplace( LEVEL_2_STATE,   std::make_unique<Level2State>()   );
-    m_stateTable.emplace( LEVEL_3_STATE,   std::make_unique<Level3State>()   );
-    m_stateTable.emplace( LEVEL_4_STATE,   std::make_unique<Level4State>()   );
-    m_stateTable.emplace( LEVEL_5_STATE,   std::make_unique<Level5State>()   );
-    m_stateTable.emplace( GAME_OVER_STATE, std::make_unique<GameOverState>() );
-    m_stateTable.emplace( QUIT_STATE,      std::make_unique<QuitState>()     );
+    m_stateTable.emplace( NULL_STATE,      std::make_shared<NullState>()     );
+    m_stateTable.emplace( MAIN_MENU_STATE, std::make_shared<MainMenuState>() );
+    m_stateTable.emplace( SETTINGS_STATE,  std::make_shared<SettingsState>() );
+    m_stateTable.emplace( PAUSED_STATE,    std::make_shared<PausedState>()   );
+    m_stateTable.emplace( LEVEL_1_STATE,   std::make_shared<Level1State>()   );
+    m_stateTable.emplace( LEVEL_2_STATE,   std::make_shared<Level2State>()   );
+    m_stateTable.emplace( LEVEL_3_STATE,   std::make_shared<Level3State>()   );
+    m_stateTable.emplace( LEVEL_4_STATE,   std::make_shared<Level4State>()   );
+    m_stateTable.emplace( LEVEL_5_STATE,   std::make_shared<Level5State>()   );
+    m_stateTable.emplace( GAME_OVER_STATE, std::make_shared<GameOverState>() );
+    m_stateTable.emplace( QUIT_STATE,      std::make_shared<QuitState>()     );
 
     // Set the initial game state
     // ==========================
@@ -40,21 +38,14 @@ GameStateManager::GameStateManager():
 
 
 
-void GameStateManager::LinkToGame(Game2D& app)
+bool GameStateManager::IsState(GameStateID state) const
 {
-    m_gameData = &app;
+    return (m_state == state);
 }
 
 
 
-GAME_STATE_TYPE GameStateManager::GetCurrentState() const
-{
-    return m_currentState;
-}
-
-
-
-void GameStateManager::PushState(GAME_STATE_TYPE newState)
+void GameStateManager::PushState(GameStateID newState)
 {
     m_stack.push(newState);
 }
@@ -63,50 +54,48 @@ void GameStateManager::PushState(GAME_STATE_TYPE newState)
 
 void GameStateManager::PopState()
 {
-    GAME_2D_ASSERT_MSG(!m_stack.empty(), "Game state stack is empty.");
-
     m_stack.pop();
 }
 
 
 
-void GameStateManager::HandleEvents()
+void GameStateManager::HandleEvents(Game2D& game)
 {
-    GAME_2D_ASSERT_MSG(m_gameData, "Game state manager is not properly initialized.");
-
-    m_stateTable.at(m_currentState)
-        ->OnHandle(*m_gameData);
+    GetCurrentState()->OnHandle(game);
 }
 
 
 
-void GameStateManager::Update()
+void GameStateManager::Update(Game2D& game)
 {
-    GAME_2D_ASSERT_MSG(m_gameData, "Game state manager is not properly initialized.");
-
-    if (m_currentState != m_stack.top())
+    if (m_state != m_stack.top())
     {
-        // Exit current state
-        m_stateTable.at(m_currentState)
-            ->OnExit(*m_gameData);
+        // To exit current state
+        GetCurrentState()->OnExit(game);
 
-        // Enter new state
-        m_currentState = m_stack.top();
+        // To enter new state
+        m_state = m_stack.top();
 
-        m_stateTable.at(m_currentState)
-            ->OnEnter(*m_gameData);
+        GetCurrentState()->OnEnter(game);
     }
 
-    m_stateTable.at(m_currentState)
-        ->OnUpdate(*m_gameData);
+    GetCurrentState()->OnUpdate(game);
 }
 
 
 
-void GameStateManager::Render()
+void GameStateManager::Render(Game2D& game)
 {
-    GAME_2D_ASSERT_MSG(m_gameData, "Game state manager is not properly initialized.");
+    GetCurrentState()->OnRender(game);
+}
 
-    m_stateTable.at(m_currentState)
-        ->OnRender(*m_gameData);
+
+
+// ******************
+// INTERNAL FUNCTIONS
+// ******************
+
+std::shared_ptr<GameState> GameStateManager::GetCurrentState()
+{
+    return m_stateTable.at( m_state );
 }

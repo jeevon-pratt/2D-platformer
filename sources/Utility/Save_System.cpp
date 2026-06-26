@@ -4,7 +4,6 @@
 #include <memory>                       // std::unique_ptr
 #include <string>                       // std::string
 
-#include "Utility/Log.hpp"              // GAME_2D_LOG_WARN macro
 #include "Utility/Save_System.hpp"      // SaveFileData struct
 #include "Utility/Memory.hpp"           // LoadJson, OverWriteJson function
 
@@ -80,7 +79,7 @@ SaveFileData LoadFromSaveFile()
 
 
     SaveFileData data;
-    data.level        = static_cast<GAME_STATE_TYPE>( root["level"].asUInt() );
+    data.level        = static_cast<GameStateID>( root["level"].asUInt() );
     data.playerPos.x  = root["x"].asFloat();
     data.playerPos.y  = root["y"].asFloat();
     data.playerHealth = root["health"].asFloat();

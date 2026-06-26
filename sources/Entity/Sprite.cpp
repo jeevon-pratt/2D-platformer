@@ -1,8 +1,9 @@
 #include <json/value.h>         // Json::Value class
 #include <SDL3/SDL_render.h>    // SDL_SetTextureAlphaMod function
 
-#include "Media/Sprite.hpp"     // Sprite class
-#include "Utility/Log.hpp"      // GAME_2D_LOG_ERROR macro function
+#include "Entity/Sprite.hpp"    // Sprite class
+#include "Utility/Assert.hpp"   // GAME_2D_ASSERT macro function
+#include "Utility/Log.hpp"      // GAME_2D_LOG_VERBOSE macro function
 #include "Utility/Memory.hpp"   // LoadJson function
 
 
@@ -34,8 +35,22 @@ Sprite::Sprite(const SpriteCreateInfo& info):
     m_screenCoord  (info.screenCoord),
     m_scrollFactor (info.scrollFactor)
 {
-    if (!info.animation.empty())
-        LoadAnimations(info.animation);
+    GAME_2D_ASSERT( !info.animation.empty() );
+
+    LoadAnimations(info.animation);
+}
+
+
+
+void Sprite::operator=(const SpriteCreateInfo& info)
+{
+    m_texture      = info.texture;
+    m_screenCoord  = info.screenCoord;
+    m_scrollFactor = info.scrollFactor;
+
+    GAME_2D_ASSERT( !info.animation.empty() );
+
+    LoadAnimations(info.animation);
 }
 
 
@@ -59,7 +74,7 @@ void Sprite::LoadAnimations(const std::string& filepath)
  
         uint8_t duration = frame["duration"].asUInt();
 
-        frames.emplace_back( Frame{srcrect, duration} );
+        frames.emplace_back(srcrect, duration);
     }
 
 
@@ -135,23 +150,25 @@ void Sprite::SetAlphaMod(uint8_t alpha)
 
 
 
+void Sprite::ResetAnimation(const std::string& name)
+{
+    if ( !m_animations.contains(name) )
+        return;
+
+    m_animations[name].Reset();
+}
+
+
+
 void Sprite::PlayAnimation(const std::string& name)
 {
     if ( !m_animations.contains(name) )
     {
-        GAME_2D_LOG_ERROR("Could not display \'%s\' animation.\n\n", name.data());
+        GAME_2D_LOG_VERBOSE("Could not display \'%s\' animation.\n", name.data());
         return;
     }
 
+    m_animations[name].Play();
 
-    Animation& cycle = m_animations[name];
-
-    cycle.StepTime();
-
-    if (cycle.FrameTimeExceeded())
-    {
-        cycle.NextFrame();
-
-        m_currentFrame = cycle.GetCurrentFrame();
-    }
+    m_currentFrame = m_animations[name].GetCurrentFrame();
 }
