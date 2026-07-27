@@ -11,8 +11,8 @@
 #include <vector>                       // std::vector
 
 #include "Entity/Game_Object.hpp"       // GameObject class
-#include "Entity/Sprite.hpp"            // SpriteCreateInfo struct
-#include "Media/Texture_Manager.hpp"    // TextureManager class
+#include "Media/Sprite.hpp"             // SpriteCreateInfo struct
+#include "Media/Asset.hpp"              // AssetManager class
 #include "Utility/Assert.hpp"           // GAME_2D_ASSERT macro function
 #include "Utility/Log.hpp"              // GAME_2D_LOG_ERROR macro function
 
@@ -61,13 +61,13 @@ void GameObject::operator=(GameObject&& object) noexcept
 
 
 
-void GameObject::CreateSprite(const TextureManager& manager, const Json::Value& sprite)
+void GameObject::CreateSprite(const AssetManager& manager, const Json::Value& object)
 {
-    const char* texture   = sprite["texture"].asCString();
-    const char* animation = sprite["animation"].asCString();
+    const char* texture   = object["texture"].asCString();
+    const char* animation = object["animation"].asCString();
 
     SpriteCreateInfo info;
-    info.texture      = manager.Get(texture);
+    info.texture      = manager.GetTexture(texture);
     info.animation    = animation;
     info.screenCoord  = false;
     info.scrollFactor = 1.0f;
@@ -84,6 +84,8 @@ void GameObject::CreateHitBox(b2World& world, const Json::Value& object)
     float   yPos  = object["position"][1].asFloat();
     uint8_t type  = object["body_type"].asUInt();
 
+    m_spawn.Set(xPos, yPos);
+
     b2BodyDef bodyDef;
     bodyDef.type             = static_cast<b2BodyType>(type);
     bodyDef.fixedRotation    = object["fixed_rotation"].asBool();
@@ -91,8 +93,7 @@ void GameObject::CreateHitBox(b2World& world, const Json::Value& object)
     bodyDef.angle            = angle * static_cast<float>(std::numbers::pi / 180.0);
     bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(this);
 
-    m_body  = world.CreateBody(&bodyDef);
-    m_spawn = b2Vec2(xPos, yPos);
+    m_body = world.CreateBody(&bodyDef);
 
     CreateFixture(object);
 }
@@ -193,36 +194,42 @@ void GameObject::SetAngle(float angle)
 
 
 
-void GameObject::SetSpawnPoint(b2Vec2 pos)
+void GameObject::SetSpawnPoint(float x, float y)
 {
-    m_spawn = pos;
+    m_spawn.Set(x, y);
 }
 
 
 
-void GameObject::SetPosition(b2Vec2 newPos)
+void GameObject::SetPosition(float x, float y)
 {
     GAME_2D_ASSERT(m_body && m_fixture);
 
-    m_body->SetTransform(newPos, 0.0f);
+    b2Vec2 position(x, y);
+
+    m_body->SetTransform(position, 0.0f);
 }
 
 
 
-void GameObject::SetTransform(b2Vec2 newPos, float angle)
+void GameObject::SetTransform(float x, float y, float angle)
 {
     GAME_2D_ASSERT(m_body && m_fixture);
 
-    m_body->SetTransform(newPos, angle);
+    b2Vec2 position(x, y);
+
+    m_body->SetTransform(position, angle);
 }
 
 
 
-void GameObject::SetVelocity(b2Vec2 force)
+void GameObject::SetVelocity(float xVel, float yVel)
 {
     GAME_2D_ASSERT(m_body && m_fixture);
 
-    m_body->SetLinearVelocity(force);
+    b2Vec2 velocity(xVel, yVel);
+
+    m_body->SetLinearVelocity(velocity);
 }
 
 
@@ -275,9 +282,10 @@ void GameObject::PlayAnimation(const std::string& name)
 void GameObject::CreateFixture(const Json::Value& object)
 {
     b2FixtureDef fixtureDef;
-    fixtureDef.density     = object["density"].asFloat();
-    fixtureDef.friction    = object["friction"].asFloat();
-    fixtureDef.restitution = object["restitution"].asFloat();
+    fixtureDef.density          = object["density"].asFloat();
+    fixtureDef.friction         = object["friction"].asFloat();
+    fixtureDef.restitution      = object["restitution"].asFloat();
+    fixtureDef.userData.pointer = static_cast<uintptr_t>(false);
 
     std::string shape = object["shape"].asString();
 
@@ -291,7 +299,6 @@ void GameObject::CreateFixture(const Json::Value& object)
 
         fixtureDef.shape = &box;
 
-
         m_fixture = m_body->CreateFixture(&fixtureDef);
     }
 
@@ -301,7 +308,6 @@ void GameObject::CreateFixture(const Json::Value& object)
         ball.m_radius = object["radius"].asFloat();
 
         fixtureDef.shape = &ball;
-
 
         m_fixture = m_body->CreateFixture(&fixtureDef);
     }

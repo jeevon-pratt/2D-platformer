@@ -1,7 +1,7 @@
 #include <json/value.h>         // Json::Value class
 #include <SDL3/SDL_render.h>    // SDL_SetTextureAlphaMod function
 
-#include "Entity/Sprite.hpp"    // Sprite class
+#include "Media/Sprite.hpp"     // Sprite class
 #include "Utility/Assert.hpp"   // GAME_2D_ASSERT macro function
 #include "Utility/Log.hpp"      // GAME_2D_LOG_VERBOSE macro function
 #include "Utility/Memory.hpp"   // LoadJson function
@@ -35,7 +35,7 @@ Sprite::Sprite(const SpriteCreateInfo& info):
     m_screenCoord  (info.screenCoord),
     m_scrollFactor (info.scrollFactor)
 {
-    GAME_2D_ASSERT( !info.animation.empty() );
+    GAME_2D_ASSERT(!info.animation.empty());
 
     LoadAnimations(info.animation);
 }
@@ -48,7 +48,7 @@ void Sprite::operator=(const SpriteCreateInfo& info)
     m_screenCoord  = info.screenCoord;
     m_scrollFactor = info.scrollFactor;
 
-    GAME_2D_ASSERT( !info.animation.empty() );
+    GAME_2D_ASSERT(!info.animation.empty());
 
     LoadAnimations(info.animation);
 }
@@ -83,7 +83,7 @@ void Sprite::LoadAnimations(const std::string& filepath)
     {
         Animation cycle;
 
-        std::string name  = tag["name"].asString();
+        const char* name  = tag["name"].asCString();
         uint8_t     begin = tag["from"].asUInt();
         uint8_t     end   = tag["to"].asUInt();
 
@@ -93,7 +93,6 @@ void Sprite::LoadAnimations(const std::string& filepath)
 
         m_animations.emplace(name, cycle);
     }
-
 
     // All sprite meta data has a default animation frame
     m_currentFrame = m_animations["default"].GetCurrentFrame();
@@ -152,7 +151,7 @@ void Sprite::SetAlphaMod(uint8_t alpha)
 
 void Sprite::ResetAnimation(const std::string& name)
 {
-    if ( !m_animations.contains(name) )
+    if (!m_animations.contains(name))
         return;
 
     m_animations[name].Reset();
@@ -162,9 +161,9 @@ void Sprite::ResetAnimation(const std::string& name)
 
 void Sprite::PlayAnimation(const std::string& name)
 {
-    if ( !m_animations.contains(name) )
+    if (!m_animations.contains(name))
     {
-        GAME_2D_LOG_VERBOSE("Could not display \'%s\' animation.\n", name.data());
+        GAME_2D_LOG_VERBOSE("Could not display \'%s\' animation.\n", name.c_str());
         return;
     }
 

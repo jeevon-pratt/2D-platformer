@@ -10,6 +10,7 @@
             "name": "sdl3-image",
             "features": ["png", "jpeg"]
         },
+        "sdl3-mixer",
         "sdl3-ttf",
         "box2d",
         "jsoncpp"

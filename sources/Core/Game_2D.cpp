@@ -1,6 +1,7 @@
 #include <box2d/box2d.h>            // Box2D functionality
 #include <SDL3/SDL.h>               // SDL functionality
-#include <SDL3_ttf/SDL_ttf.h>       // TTF_Init and TTF_Quit functions, TTF_Font struct
+#include <SDL3_mixer/SDL_mixer.h>   // MIX_Init and MIX_Quit functions
+#include <SDL3_ttf/SDL_ttf.h>       // TTF_Init and TTF_Quit functions
 #include <json/value.h>             // Json::Value class
 
 #ifndef __GNUC__
@@ -10,6 +11,7 @@
 #include <string>                   // std::string
 
 #include "Core/Game_2D.hpp"         // Game2D class
+#include "Utility/Assert.hpp"       // GAME_2D_LOG_ASSERT macro function
 #include "Utility/Log.hpp"          // InitLog, CloseLogFile and Log macro functions
 #include "Utility/Math.hpp"         // ConvertToMeters function
 #include "Utility/Memory.hpp"       // LoadJson function
@@ -29,10 +31,11 @@ static constexpr const char* BINARY_DIR     = "../../../bin/debug";
 static constexpr const char* BINARY_DIR     = "../../../bin/release";
 #endif
 
-static constexpr const char* ASSET_CONFIG   = "../../internal/asset_config.json";
-static constexpr const char* OBJECT_CONFIG  = "../../internal/object_config.json";
-static constexpr const char* LOG_FILE_PATH  = "../../internal/log.txt";
-static constexpr const char* SAVE_FILE_PATH = "../../internal/save.json";
+static constexpr const char* ASSET_CONFIG     = "../../internal/asset_config.json";
+static constexpr const char* ENTITY_CONFIG    = "../../internal/entity_config.json";
+static constexpr const char* MENU_CONFIG      = "../../internal/menu_config.json";
+static constexpr const char* LOG_FILE_PATH    = "../../internal/log.txt";
+static constexpr const char* SAVE_FILE_PATH   = "../../internal/save.json";
 
 
 // Game Constants
@@ -43,7 +46,7 @@ static constexpr uint16_t   WINDOW_HEIGHT     = 800;
 static constexpr uint8_t    MAX_OBJECTS       = 23;
 static constexpr uint8_t    MAX_ENEMIES       = 50;
 static constexpr uint8_t    MAX_LAYER_SPRITES = 100;
-static const     b2Vec2     GRAVITY           = b2Vec2(0.0f, -9.81f);
+static const     b2Vec2     GRAVITY           = {0.0f, -9.81f};
 
 
 
@@ -52,10 +55,15 @@ static const     b2Vec2     GRAVITY           = b2Vec2(0.0f, -9.81f);
 // **************
 
 Game2D::Game2D():
-    m_window         ("2D_PLATFORMER", WINDOW_WIDTH, WINDOW_HEIGHT),
-    m_renderer       (m_window),
-    m_textureManager (m_renderer),
-    m_physicsWorld   ( std::make_unique<b2World>(GRAVITY) )
+    m_window       ("2D_PLATFORMER", WINDOW_WIDTH, WINDOW_HEIGHT),
+    m_renderer     (m_window),
+    m_mainMenu     (m_window),
+    m_settingsMenu (m_window),
+    m_pauseMenu    (m_window),
+    m_levelUI      (m_window),
+    m_assetManager (m_renderer),
+    m_camera       (m_window),
+    m_physicsWorld (std::make_unique<b2World>(GRAVITY))
 {
     m_physicsWorld->SetContactListener(&m_contactListener);
 
@@ -65,10 +73,7 @@ Game2D::Game2D():
 
     LoadAssets();
 
-    CreateMainMenu();
-    CreateSettingsMenu();
-    CreatePauseMenu();
-    // CreateLevelUI();
+    CreateMenus();
     CreateObjects();
     CreateLayers();
 }
@@ -102,7 +107,7 @@ void Game2D::Init()
 
     GAME_2D_LOG_DEBUG("Initializing SDL3\n");
 
-    if ( !SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) || !TTF_Init() )
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) || !MIX_Init() || !TTF_Init())
     {
         GAME_2D_LOG_CRITICAL("%s\n", SDL_GetError());
         std::exit(EXIT_FAILURE);
@@ -136,6 +141,7 @@ void Game2D::CleanUp()
 
     GAME_2D_LOG_DEBUG("Deinitializing SDL3\n");
     TTF_Quit();
+    MIX_Quit();
     SDL_Quit();
 
 #ifdef DEBUG
@@ -186,252 +192,61 @@ void Game2D::LoadAssets()
 {
     Json::Value assets = LoadJson(ASSET_CONFIG);
 
-
     // Loading Audio
     // =============
 
     for (const Json::Value& audio : assets["audio"])
-    {
-        const char* name = audio["name"].asCString();
-        const char* path = audio["path"].asCString();
-
-        m_audioManager.LoadAudio(name, path);
-    }
+        m_assetManager.LoadAudio(audio);
 
 
     // Loading Fonts
     // =============
 
-    for (const Json::Value& font : assets["fonts"])
-    {
-        const char* name = font["name"].asCString();
-        const char* path = font["path"].asCString();
-            
+    for (const Json::Value& font : assets["fonts"])     
         for (const Json::Value& size : assets["font_sizes"])
-            m_fontManager.LoadFont(name, path, size.asUInt());
-    }
+            m_assetManager.LoadFont(font, size.asUInt());
 
 
     // Loading Textures
     // ================
 
     for (const Json::Value& texture : assets["textures"])
-    {
-        const char* name = texture["name"].asCString();
-        const char* path = texture["path"].asCString();
-
-        m_textureManager.LoadTexture(name, path);
-    }
+        m_assetManager.LoadTexture(texture);
 }
 
 
 
-void Game2D::CreateMainMenu()
+void Game2D::CreateMenus()
 {
-    // Create menu background
-    // ======================
+    Json::Value menus = LoadJson(MENU_CONFIG);
 
-    SpriteCreateInfo menuInfo;
-    menuInfo.texture     = m_textureManager.Get("menu_background");
-    menuInfo.animation   = "../../assets/dev/menu_background.json";
-    menuInfo.screenCoord = true;
-
-    m_mainMenu.AddBackground(menuInfo);
-
-
-    // Create play button
-    // ==================
-
-    SpriteCreateInfo buttonInfo;
-    buttonInfo.texture     = m_textureManager.Get("mother_tick");
-    buttonInfo.animation   = "../../assets/dev/mother_tick.json";
-    buttonInfo.screenCoord = true;
-
-    Sprite buttonSprite = Sprite(buttonInfo);
-
-    b2Vec2 buttonPos;
-    buttonPos.x = (m_window.GetWidth() / 2.0f) - (buttonSprite.GetFrameWidth() / 2.0f);
-    buttonPos.y = (m_window.GetHeight() / 2.0f) - (buttonSprite.GetFrameHeight() / 2.0f);
-
-    m_mainMenu.AddButton("PLAY_BUTTON", buttonSprite, buttonPos);
-
-
-    // // Create settings button
-    // // ======================
-
-    // buttonInfo.texture         = m_textureManager.Get("mother_tick");
-    // buttonInfo.animation    = "../../assets/dev/mother_tick.json";
-    // buttonInfo.screenCoord = true;
-
-    // buttonSprite = Sprite(buttonInfo);
-    // buttonPos.x = (m_window.GetWidth() / 2.0f) - (buttonSprite.GetFrameWidth() / 2.0f);
-    // buttonPos.y = (m_window.GetHeight() / 2.0f) - (buttonSprite.GetFrameHeight() / 2.0f);
-
-    // m_mainMenu.AddButton("SETTINGS_BUTTON", buttonSprite, buttonPos);
-
-
-    // // Create quit button
-    // // ==================
-
-    // buttonInfo.texture         = m_textureManager.Get("mother_tick");
-    // buttonInfo.animation    = "../../assets/dev/mother_tick.json";
-    // buttonInfo.screenCoord = true;
-
-    // buttonSprite = Sprite(buttonInfo);
-    // buttonPos.x = (m_window.GetWidth() / 2.0f) - (buttonSprite.GetFrameWidth() / 2.0f);
-    // buttonPos.y = (m_window.GetHeight() / 2.0f) - (buttonSprite.GetFrameHeight() / 2.0f);
-
-    // m_mainMenu.AddButton("QUIT_BUTTON", buttonSprite, buttonPos);
-}
-
-
-
-void Game2D::CreateSettingsMenu()
-{
-    // Create menu background
-    // ======================
-
-    SpriteCreateInfo menuInfo;
-    menuInfo.texture     = m_textureManager.Get("menu_background");
-    menuInfo.animation   = "../../assets/dev/menu_background.json";
-    menuInfo.screenCoord = true;
-
-    m_settingsMenu.AddBackground(menuInfo);
-
-
-    // Create back button
-    // ==================
-
-    SpriteCreateInfo buttonInfo;
-    buttonInfo.texture     = m_textureManager.Get("mother_tick");
-    buttonInfo.animation   = "../../assets/dev/mother_tick.json";
-    buttonInfo.screenCoord = true;
-
-    Sprite buttonSprite = Sprite(buttonInfo);
-
-    b2Vec2 buttonPos;
-    buttonPos.x = (m_window.GetWidth() / 2.0f) - (buttonSprite.GetFrameWidth() / 2.0f);
-    buttonPos.y = (m_window.GetHeight() / 2.0f) - (buttonSprite.GetFrameHeight() / 2.0f);
-
-    m_settingsMenu.AddButton("BACK_BUTTON", buttonSprite, buttonPos);
-}
-
-
-
-void Game2D::CreatePauseMenu()
-{
-    // Create menu background
-    // ======================
-
-    SpriteCreateInfo menuInfo;
-    menuInfo.texture     = m_textureManager.Get("menu_background");
-    menuInfo.animation   = "../../assets/dev/menu_background.json";
-    menuInfo.screenCoord = true;
-
-    m_pauseMenu.AddBackground(menuInfo);
-
-
-    // Create resume button
-    // ====================
-
-    SpriteCreateInfo buttonInfo;
-    buttonInfo.texture     = m_textureManager.Get("mother_tick");
-    buttonInfo.animation   = "../../assets/dev/mother_tick.json";
-    buttonInfo.screenCoord = true;
-
-    Sprite buttonSprite = Sprite(buttonInfo);
-
-    b2Vec2 buttonPos;
-    buttonPos.x = (m_window.GetWidth() / 2.0f) - (buttonSprite.GetFrameWidth() / 2.0f);
-    buttonPos.y = (m_window.GetHeight() / 2.0f) - (buttonSprite.GetFrameHeight() / 2.0f);
-
-    m_pauseMenu.AddButton("RESUME_BUTTON", buttonSprite, buttonPos);
-
-
-    // Create main menu button
-    // =======================
-
-    buttonInfo.texture     = m_textureManager.Get("mother_tick");
-    buttonInfo.animation   = "../../assets/dev/mother_tick.json";
-    buttonInfo.screenCoord = true;
-
-    buttonSprite = Sprite(buttonInfo);
-    buttonPos.x = (m_window.GetWidth() / 2.0f) - (buttonSprite.GetFrameWidth() / 2.0f);
-    buttonPos.y = (m_window.GetHeight() / 2.0f) - (buttonSprite.GetFrameHeight() / 2.0f);
-
-    m_pauseMenu.AddButton("MAIN_MENU_BUTTON", buttonSprite, buttonPos);
-
-
-    // Create settings button
-    // ======================
-
-    buttonInfo.texture     = m_textureManager.Get("mother_tick");
-    buttonInfo.animation   = "../../assets/dev/mother_tick.json";
-    buttonInfo.screenCoord = true;
-
-    buttonSprite = Sprite(buttonInfo);
-    buttonPos.x = (m_window.GetWidth() / 2.0f) - (buttonSprite.GetFrameWidth() / 2.0f);
-    buttonPos.y = (m_window.GetHeight() / 2.0f) - (buttonSprite.GetFrameHeight() / 2.0f);
-
-    m_pauseMenu.AddButton("SETTINGS_BUTTON", buttonSprite, buttonPos);
-
-
-    // Create quit button
-    // ==================
-
-    buttonInfo.texture     = m_textureManager.Get("mother_tick");
-    buttonInfo.animation   = "../../assets/dev/mother_tick.json";
-    buttonInfo.screenCoord = true;
-
-    buttonSprite = Sprite(buttonInfo);
-    buttonPos.x = (m_window.GetWidth() / 2.0f) - (buttonSprite.GetFrameWidth() / 2.0f);
-    buttonPos.y = (m_window.GetHeight() / 2.0f) - (buttonSprite.GetFrameHeight() / 2.0f);
-
-    m_pauseMenu.AddButton("QUIT_BUTTON", buttonSprite, buttonPos);
-}
-
-
-
-void Game2D::CreateLevelUI()
-{
-    // Create pause button
-    // ===================
-
-    SpriteCreateInfo buttonInfo;
-    buttonInfo.texture     = m_textureManager.Get("mother_tick");
-    buttonInfo.animation   = "../../assets/dev/mother_tick.json";
-    buttonInfo.screenCoord = true;
-
-    Sprite buttonSprite = Sprite(buttonInfo);
-
-    b2Vec2 buttonPos;
-    buttonPos.x = (m_window.GetWidth() / 2.0f) - (buttonSprite.GetFrameWidth() / 2.0f);
-    buttonPos.y = (m_window.GetHeight() / 2.0f) - (buttonSprite.GetFrameHeight() / 2.0f);
-
-    m_levelUI.AddButton("PAUSE_BUTTON", buttonSprite, buttonPos);
+    m_mainMenu     .CreateWidgets( m_assetManager, menus["main_menu"]     );
+    m_pauseMenu    .CreateWidgets( m_assetManager, menus["pause_menu"]    );
+    m_settingsMenu .CreateWidgets( m_assetManager, menus["settings_menu"] );
+    m_levelUI      .CreateWidgets( m_assetManager, menus["level_ui"]      );
 }
 
 
 
 void Game2D::CreateObjects()
 {
-    Json::Value root = LoadJson(OBJECT_CONFIG);
+    Json::Value entities = LoadJson(ENTITY_CONFIG);
 
 
     // Player
     // ======
 
-    m_player.CreateSprite(m_textureManager, root["player"]);
-    m_player.CreateHitBox(*m_physicsWorld, root["player"]);
+    m_player.CreateSprite(m_assetManager, entities["player"]);
+    m_player.CreateHitBox(*m_physicsWorld, entities["player"]);
 
 
     // Game Objects
     // ============
 
-    for (const Json::Value& object : root["objects"])
+    for (const Json::Value& object : entities["objects"])
     {
         m_objects.emplace_back();
-        m_objects.back().CreateSprite(m_textureManager, object);
+        m_objects.back().CreateSprite(m_assetManager, object);
         m_objects.back().CreateHitBox(*m_physicsWorld, object);
     }
 
@@ -439,7 +254,7 @@ void Game2D::CreateObjects()
     // Ground Objects
     // ==============
 
-    Json::Value ground = root["ground"];
+    Json::Value ground = entities["ground"];
 
     for (const Json::Value& position : ground["positions"])
     {
@@ -447,17 +262,19 @@ void Game2D::CreateObjects()
         float yPos = position[1].asFloat();
 
         m_objects.emplace_back();
-        m_objects.back().CreateSprite(m_textureManager, ground);
+        m_objects.back().CreateSprite(m_assetManager, ground);
         m_objects.back().CreateHitBox(*m_physicsWorld, ground);
-        m_objects.back().SetSpawnPoint( b2Vec2(xPos, yPos) );
-        m_objects.back().SetPosition( b2Vec2(xPos, yPos) );
+        m_objects.back().SetSpawnPoint(xPos, yPos);
+        m_objects.back().SetPosition(xPos, yPos);
     }
+
+    GAME_2D_ASSERT(m_objects.size() <= MAX_OBJECTS);
 
 
     // Enemies
     // =======
 
-    Json::Value enemy = root["obunga"];
+    Json::Value enemy = entities["obunga"];
 
     for (const Json::Value& position : enemy["positions"])
     {
@@ -465,11 +282,13 @@ void Game2D::CreateObjects()
         float yPos = position[1].asFloat();
 
         m_enemies.emplace_back();
-        m_enemies.back().CreateSprite(m_textureManager, enemy);
+        m_enemies.back().CreateSprite(m_assetManager, enemy);
         m_enemies.back().CreateHitBox(*m_physicsWorld, enemy);
-        m_enemies.back().SetSpawnPoint( b2Vec2(xPos, yPos) );
-        m_enemies.back().SetPosition( b2Vec2(xPos, yPos) );
+        m_enemies.back().SetSpawnPoint(xPos, yPos);
+        m_enemies.back().SetPosition(xPos, yPos);
     }
+
+    GAME_2D_ASSERT(m_objects.size() <= MAX_ENEMIES);
 }
 
 
@@ -480,7 +299,7 @@ void Game2D::CreateLayers()
     m_backgroundLayer.reserve(MAX_LAYER_SPRITES);
 
     SpriteCreateInfo deathStarInfo;
-    deathStarInfo.texture     = m_textureManager.Get("death_star");
+    deathStarInfo.texture     = m_assetManager.GetTexture("death_star");
     deathStarInfo.animation   = "../../assets/dev/death_star.json";
     deathStarInfo.screenCoord = false;
     deathStarInfo.scrollFactor   = 0.01f;

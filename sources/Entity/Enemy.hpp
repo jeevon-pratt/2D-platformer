@@ -2,7 +2,7 @@
 
 #include "Entity/Game_Object.hpp"   // GameObject class
 #include "Entity/Player.hpp"        // Player class
-#include "Entity/Sprite.hpp"        // SpriteCreateInfo struct
+#include "Media/Sprite.hpp"         // SpriteCreateInfo struct
 
 
 /**

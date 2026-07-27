@@ -16,11 +16,10 @@ static void WalkRight(Player& player)
     if (!player.IsGrounded())
         return;
 
-    b2Vec2 velocity;
-    velocity.x = Player::WALK_SPEED;
-    velocity.y = 0.0f;
+    float xVel = Player::WALK_SPEED;
+    float yVel = 0.0f;
 
-    player.SetVelocity(velocity);
+    player.SetVelocity(xVel, yVel);
 }
 
 
@@ -33,11 +32,10 @@ static void WalkLeft(Player& player)
     if (!player.IsGrounded())
         return;
 
-    b2Vec2 velocity;
-    velocity.x = -Player::WALK_SPEED;
-    velocity.y = 0.0f;
+    float xVel = -Player::WALK_SPEED;
+    float yVel = 0.0f;
 
-    player.SetVelocity(velocity);
+    player.SetVelocity(xVel, yVel);
 }
 
 

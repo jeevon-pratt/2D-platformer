@@ -1,8 +1,9 @@
 #pragma once
 
+#include <cstdint>     // uint16_t
 #include <string>      // std::string
 
-union  SDl_Event;
+union  SDL_Event;
 struct SDL_Window;
 
 
@@ -28,23 +29,13 @@ public:
     uint16_t GetHeight() const;
 
     // Handles User input on SDL_Window
-    void HandleInput(const SDL_Event& event) const;
+    void HandleInput(const SDL_Event& event);
 
     // Shows a pop-up window with a message
     void ShowMessageBox(const std::string& title, const std::string& message) const;
 
     // Destroys the internal SDL_Window
     ~Window();
-
-public:
-    // STATIC FUNCTIONS
-    // ================
-
-    // Enables the cursor on the window
-    static void ShowCursor();
-
-    // Disables the cursor on the window
-    static void HideCursor();
 
 private:
     // INTERNAL FUNCTIONS
@@ -60,7 +51,4 @@ private:
     //
     // Note: The context can be modified even if the Window object is const.
     SDL_Window* m_windowContext;
-
-    // Boolean that indicates if the ImGui context has been initialized.
-    bool m_imGuiContext;
 };

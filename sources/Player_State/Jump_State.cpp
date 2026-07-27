@@ -16,11 +16,10 @@ static void Jump(Player& player)
     // Note: The x-component of the jump velocity is not 0 to make it possible
     //       for the player to jump while walking in any direction.
 
-    b2Vec2 velocity;
-    velocity.x = player.GetVelocity().x;
-    velocity.y = Player::JUMP_SPEED;
+    float xVel = player.GetVelocity().x;
+    float yVel = Player::JUMP_SPEED;
 
-    player.SetVelocity(velocity);
+    player.SetVelocity(xVel, yVel);
 }
 
 

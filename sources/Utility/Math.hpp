@@ -1,6 +1,5 @@
 #pragma once
 
-#include <algorithm>        // std::max, std::min functions
 #include <cmath>            // round function
 #include <iosfwd>           // std::ostream
 #include <type_traits>      // std::is_integral
@@ -88,7 +87,7 @@ inline constexpr T RoundToInt(double val)
 template<typename T>
 inline constexpr bool InBounds(const T& value, const T& lowerBound, const T& upperBound)
 {
-    return ( (value > lowerBound) && (value < upperBound) );
+    return (value > lowerBound) && (value < upperBound);
 }
 
 
@@ -97,14 +96,5 @@ inline constexpr bool InBounds(const T& value, const T& lowerBound, const T& upp
 template<typename T>
 inline constexpr bool InBoundsEq(const T& value, const T& lowerBound, const T& upperBound)
 {
-    return ( (value >= lowerBound) && (value <= upperBound) );
-}
-
-
-
-// Restricts a value to a lower bound and an upper bound
-template<typename T>
-inline void Clamp(T& value, T lowerBound, T upperBound)
-{
-    value = std::max( lowerBound, std::min(value, upperBound) );
+    return (value >= lowerBound) && (value <= upperBound);
 }

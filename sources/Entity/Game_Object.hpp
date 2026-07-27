@@ -2,13 +2,13 @@
 
 #include <box2d/b2_math.h>         // b2Vec2 class
 
-#include "Entity/Sprite.hpp"       // Sprite class
+#include "Media/Sprite.hpp"        // Sprite class
 
 struct SDL_Texture;
 class  b2Body;
 class  b2Fixture;
 class  b2World;
-class  TextureManager;
+class  AssetManager;
 
 namespace Json
 {
@@ -48,7 +48,7 @@ public:
     void operator=(GameObject&& object) noexcept;
 
     // Creates the sprite of the game object
-    virtual void CreateSprite(const TextureManager& manager, const Json::Value& sprite);
+    virtual void CreateSprite(const AssetManager& manager, const Json::Value& object);
 
     // Creates the physics body and main fixture of the game object
     virtual void CreateHitBox(b2World& world, const Json::Value& object);
@@ -59,7 +59,7 @@ public:
     // Returns a const reference to the game object sprite
     virtual const Sprite& GetSprite() const;
 
-        // Returns the current animation frame of the sprite
+    // Returns the current animation frame of the sprite
     const SDL_FRect& GetSourceRect() const;
 
     // Returns texture of the sprite
@@ -90,16 +90,16 @@ public:
     virtual void SetAngle(float angle);
 
     // Sets the spawn point of the physics body
-    virtual void SetSpawnPoint(b2Vec2 pos);
+    virtual void SetSpawnPoint(float x, float y);
 
     // Sets the position of the physics body
-    virtual void SetPosition(b2Vec2 newPos);
+    virtual void SetPosition(float x, float y);
 
     // Sets the transform of the physics body
-    virtual void SetTransform(b2Vec2 newPos, float angle);
+    virtual void SetTransform(float x, float y, float angle);
 
     // Sets the linear velocity vector
-    virtual void SetVelocity(b2Vec2 force);
+    virtual void SetVelocity(float xVel, float yVel);
 
     // Negates the boolean that controls the direction of the game object
     virtual void Invert();
@@ -130,7 +130,7 @@ protected:
     virtual void CreateFixture(const Json::Value& object);
 
 protected:
-    // The animation sprite of the game object
+    // The sprite of the game object
     //
     // Note: This value is not populated upon initialization if the default constructor
     //       is called. In that case, the 'CreateSprite' method should be called with

@@ -2,79 +2,86 @@
 
 #include "Core/Game_2D.hpp"             // Game2D class
 #include "Game_State/Game_State.hpp"    // Game state classes and enum
+#include "UI/Widget.hpp"                // Button::Event
+#include "Utility/Log.hpp"              // GAME_2D_LOG_DEBUG macro function
 
 
 // **************
 // IMPLEMENTATION
 // **************
 
-void PausedState::OnEnter(Game2D& app)
+void PausedState::OnEnter(Game2D& game)
 {
-    // Configure Pause Menu
-
-    Window::ShowCursor();
+    GAME_2D_LOG_DEBUG("Entering Paused State\n");
 }
 
 
 
-void PausedState::OnHandle(Game2D& app)
+void PausedState::OnHandle(Game2D& game)
 {
-    if (static SDL_Event s_event; SDL_WaitEvent(&s_event))
+    static SDL_Event s_event;
+    
+    while (SDL_PollEvent(&s_event))
     {
-        if (s_event.type == SDL_EVENT_QUIT)
+        switch (s_event.type)
         {
-            app.m_stateManager.PopState();
-            app.m_stateManager.PushState(GAME_OVER_STATE);
-            return;
+        case SDL_EVENT_QUIT:
+            game.m_stateManager.PopState();
+            game.m_stateManager.PushState(GAME_OVER_STATE);
+            break;
+
+        case Button::Event:
+            ProcessButtonEvents(game, s_event);
+            break;
         }
 
-        app.m_window.HandleInput(s_event);
-        app.m_pauseMenu.HandleInput(s_event);
+        game.m_window.HandleInput(s_event);
+        game.m_pauseMenu.HandleInput(s_event);
     }
 }
 
 
 
-void PausedState::OnUpdate(Game2D& app)
+void PausedState::OnUpdate(Game2D& game)
 {
-
-    if (app.m_pauseMenu.OnClick("RESUME_BUTTON"))
-    {
-        app.m_stateManager.PopState();
-    }
-
-    else if (app.m_pauseMenu.OnClick("MAIN_MENU_BUTTON"))
-    {
-        app.m_stateManager.PopState();
-        app.m_stateManager.PushState(MAIN_MENU_STATE);
-    }
-
-    else if (app.m_pauseMenu.OnClick("SETTINGS_BUTTON"))
-    {
-        // The 'PopState' method is not called so that the game can
-        // transition to the previous state when in the settings menu.
-        app.m_stateManager.PushState(SETTINGS_STATE);
-    }
-
-    else if (app.m_pauseMenu.OnClick("QUIT_BUTTON"))
-    {
-        app.m_stateManager.PopState();
-        app.m_stateManager.PushState(QUIT_STATE);
-    }
+    game.m_pauseMenu.Update();
 }
 
 
 
-void PausedState::OnRender(Game2D& app)
+void PausedState::OnRender(Game2D& game)
 {
-    app.m_renderer.Clear();
-    app.m_renderer.Render(app.m_pauseMenu);
-    app.m_renderer.Display();
+    game.m_renderer.Clear();
+    game.m_renderer.Render(game.m_pauseMenu);
+    game.m_renderer.Display();
 }
 
 
 
-void PausedState::OnExit(Game2D& app)
+void PausedState::OnExit(Game2D& game)
 {
-    // No Functionality
+    GAME_2D_LOG_DEBUG("Exiting Paused State\n");
+}
+
+
+
+// ******************
+// INTERNAL FUNCTIONS
+// ******************
+
+void PausedState::ProcessButtonEvents(Game2D& game, const SDL_Event& event)
+{
+    std::string label = static_cast<const char*>(event.user.data1);
+
+    if (label == "resume_button")
+        game.m_stateManager.PopState();
+
+    else if (label == "settings_button")
+        game.m_stateManager.PushState(SETTINGS_STATE);
+
+    else if (label == "main_menu_button")
+    {
+        game.m_stateManager.PopState();
+        game.m_stateManager.PushState(MAIN_MENU_STATE);
+    }
 }

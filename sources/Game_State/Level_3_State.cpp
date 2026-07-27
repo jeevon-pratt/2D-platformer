@@ -3,97 +3,110 @@
 
 #include "Core/Game_2D.hpp"             // Game2D class
 #include "Game_State/Game_State.hpp"    // Game state classes and enum
-#include "Utility/Save_System.hpp"      // SaveData function, WriteToSaveFile function
+#include "UI/Widget.hpp"                // Button::Event function
+#include "Utility/Save_System.hpp"      // SaveData function, WriteToSaveFile
 
 
 // **************
 // IMPLEMENTATION
 // **************
 
-void Level3State::OnEnter(Game2D& app)
+void Level3State::OnEnter(Game2D& game)
 {
-    Window::HideCursor();
+    // No Functionality
 }
 
 
 
-void Level3State::OnHandle(Game2D& app)
+void Level3State::OnHandle(Game2D& game)
 {
     static SDL_Event s_event;
 
     while (SDL_PollEvent(&s_event))
     {
-        if (s_event.type == SDL_EVENT_QUIT)
+        switch (s_event.type)
         {
-            app.m_stateManager.PopState();
-            app.m_stateManager.PushState(GAME_OVER_STATE);
-            return;
+        case SDL_EVENT_QUIT:
+            game.m_stateManager.PopState();
+            game.m_stateManager.PushState(GAME_OVER_STATE);
+            break;
+
+        case Button::Event:
+            ProcessButtonEvents(game, s_event);
+            break;
         }
 
-        app.m_window.HandleInput(s_event);
-        app.m_levelUI.HandleInput(s_event);
-        app.m_renderer.HandleInput(s_event);
+        game.m_window.HandleInput(s_event);
+        game.m_levelUI.HandleInput(s_event);
+        game.m_renderer.HandleInput(s_event);
     }
 
-    app.m_player.HandleInput();
+    game.m_player.HandleInput();
 }
 
 
 
-void Level3State::OnUpdate(Game2D& app)
+void Level3State::OnUpdate(Game2D& game)
 {
-    // Update Pause Menu
-    // =================
-
-    if (app.m_levelUI.OnClick("PAUSE_BUTTON"))
-    {
-        // The 'PopState' method is not called so that the game can transition to
-        // the previous state when in the settings menu.
-        app.m_stateManager.PushState(PAUSED_STATE);
-    }
+    game.m_levelUI.Update();
 }
 
 
 
-void Level3State::OnRender(Game2D& app)
+void Level3State::OnRender(Game2D& game)
 {
-    static constexpr SDL_Color s_colorOrange{ 255, 117, 24 };
-    static constexpr SDL_Color s_colorRed{ 255, 0, 0 };
+    static constexpr SDL_Color ORANGE = { 255, 117, 24 };
+    static constexpr SDL_Color RED    = { 255, 0, 0 };
 
-    b2Vec2 camTransform = app.m_camera.GetTransform();
+    b2Vec2 camTransform = game.m_camera.GetTransform();
 
 
-    app.m_renderer.Clear();
-    app.m_renderer.DrawGradient(s_colorOrange, s_colorRed, 100.0f);
+    game.m_renderer.Clear();
+    game.m_renderer.DrawGradient(ORANGE, RED, 100.0f);
 
-    for (const auto& [sprite, pos] : app.m_backgroundLayer)
-        app.m_renderer.Render(sprite, pos, camTransform);
+    for (const auto& [sprite, pos] : game.m_backgroundLayer)
+        game.m_renderer.Render(sprite, pos, camTransform);
 
-    for (const GameObject& object : app.m_objects)
-        app.m_renderer.Render(object, camTransform);
+    for (const GameObject& object : game.m_objects)
+        game.m_renderer.Render(object, camTransform);
 
-    for (const Enemy& enemy : app.m_enemies)
-        app.m_renderer.Render(enemy, camTransform);
+    for (const Enemy& enemy : game.m_enemies)
+        game.m_renderer.Render(enemy, camTransform);
 
-    app.m_renderer.Render(app.m_player, camTransform);
+    game.m_renderer.Render(game.m_player, camTransform);
 
-    for (const auto& [sprite, pos] : app.m_foregroundLayer)
-        app.m_renderer.Render(sprite, pos, camTransform);
+    for (const auto& [sprite, pos] : game.m_foregroundLayer)
+        game.m_renderer.Render(sprite, pos, camTransform);
 
-    app.m_renderer.Render( app.m_perfMonitor );
-    app.m_renderer.Display();
+    game.m_renderer.Render(game.m_levelUI);
+    game.m_renderer.Render(game.m_perfMonitor);
+    game.m_renderer.Display();
 
-    app.m_perfMonitor.CalculateFrameRate();
+    game.m_perfMonitor.CalculateFrameRate();
 }
 
 
 
-void Level3State::OnExit(Game2D& app)
+void Level3State::OnExit(Game2D& game)
 {
     SaveFileData data;
     data.level        = LEVEL_3_STATE;
-    data.playerPos    = app.m_player.GetPosition();
-    data.playerHealth = app.m_player.GetHealth();
+    data.playerPos    = game.m_player.GetPosition();
+    data.playerHealth = game.m_player.GetHealth();
 
     WriteToSaveFile(data);
+}
+
+
+
+// ******************
+// INTERNAL FUNCTIONS
+// ******************
+
+void Level3State::ProcessButtonEvents(Game2D& game, const SDL_Event& event)
+{
+    std::string label = static_cast<const char*>(event.user.data1);
+
+    if (label == "pause_button")
+        game.m_stateManager.PushState(PAUSED_STATE);
 }

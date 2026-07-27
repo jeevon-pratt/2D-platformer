@@ -17,25 +17,28 @@ static constexpr uint8_t MAX_ANIMATION_FRAMES = 100;
 // **************
 
 Animation::Animation():
-    m_currentTime  (SDL_GetTicks()),
-    m_elapsedTime  (0),
-    m_currentIndex (0)
+    m_currentTime (SDL_GetTicks()),
+    m_elapsedTime (0),
+    m_index       (0)
 {
     m_frames.reserve(MAX_ANIMATION_FRAMES);
 }
 
 
 
-void Animation::AddFrame(const Frame& frame)
+void Animation::AddFrame(Frame frame)
 {
     m_frames.emplace_back(frame);
+
+    GAME_2D_ASSERT( m_frames.size() < MAX_ANIMATION_FRAMES );
 }
 
 
 
 bool Animation::FrameTimeExceeded() const
 {
-    GAME_2D_ASSERT(!m_frames.empty());
+    if (m_frames.empty())
+        return false;
 
     return (m_elapsedTime >= GetCurrentFrame().duration);
 }
@@ -44,29 +47,31 @@ bool Animation::FrameTimeExceeded() const
 
 bool Animation::CycleCompleted() const
 {
-    GAME_2D_ASSERT(!m_frames.empty());
+    if (m_frames.empty())
+        return false;
 
     uint8_t lastIndex = (m_frames.size() - 1);
 
-    return (m_currentIndex == lastIndex);
+    return (m_index == lastIndex);
 }
 
 
 
-const Frame& Animation::GetCurrentFrame() const
+Frame Animation::GetCurrentFrame() const
 {
-    GAME_2D_ASSERT(!m_frames.empty());
+    if (m_frames.empty())
+        return Frame();
 
-    return m_frames[ m_currentIndex ];
+    return m_frames[ m_index ];
 }
 
 
 
 void Animation::Reset()
 {
-    m_currentTime  = SDL_GetTicks();
-    m_elapsedTime  = 0;
-    m_currentIndex = 0;
+    m_currentTime = SDL_GetTicks();
+    m_elapsedTime = 0;
+    m_index       = 0;
 }
 
 
@@ -88,8 +93,8 @@ void Animation::Play()
     m_elapsedTime = 0;
 
     if (CycleCompleted())
-        m_currentIndex = 0;
+        m_index = 0;
 
     else
-        ++m_currentIndex;
+        ++m_index;
 }

@@ -4,7 +4,6 @@
 #include <box2d/b2_math.h>                          // b2Vec2 class
 
 #include "Entity/Game_Object.hpp"                   // GameObject class
-#include "Entity/Sprite.hpp"                        // SpriteCreateInfo struct
 #include "Player_State/Player_State_Manager.hpp"    // PlayerStateManager class
 
 class b2World;

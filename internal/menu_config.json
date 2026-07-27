@@ -1,0 +1,105 @@
+{
+    "main_menu":
+    [
+        {
+            "type": "button",
+            "label": "play_button",
+            "icon": "play_icon",
+            "coord": [0.5, 0.85]
+        },
+        {
+            "type": "button",
+            "label": "settings_button",
+            "icon": "settings_icon",
+            "coord": [0.1, 0.85]
+        },
+        {
+            "type": "button",
+            "label": "quit_button",
+            "icon": "quit_icon",
+            "coord": [0.1, 0.125]
+        },
+        {
+            "type": "text",
+            "label": "title",
+            "string": "2D PLATFORMER",
+            "font": "cocogoose_48",
+            "color": [0, 0, 175],
+            "coord": [0.5, 0.1]
+        },
+        {
+            "type": "text",
+            "label": "subtitle",
+            "string": "by Jee'Von Pratt",
+            "font": "cocogoose_36",
+            "color": [0, 0, 175],
+            "coord": [0.5, 0.175]
+        }
+    ],
+
+
+
+
+    "settings_menu":
+    [
+        {
+            "type": "button",
+            "label": "back_button",
+            "icon": "back_icon",
+            "coord": [0.2, 0.5]
+        },
+        {
+            "type": "slider",
+            "label": "volume_slider",
+            "track": "track_icon",
+            "knob": "knob_icon",
+            "coord": [0.6, 0.5]
+        },
+        {
+            "type": "text",
+            "label": "volume_text",
+            "string": "Volume",
+            "font": "cocogoose_48",
+            "color": [0, 0, 175],
+            "coord": [0.6, 0.42]
+        }
+    ],
+
+
+
+
+    "pause_menu":
+    [
+        {
+            "type": "button",
+            "label": "resume_button",
+            "icon": "back_icon",
+            "coord": [0.3, 0.5]
+        },
+        {
+            "type": "button",
+            "label": "settings_button",
+            "icon": "settings_icon",
+            "coord": [0.5, 0.5]
+        },
+        {
+            "type": "button",
+            "label": "main_menu_button",
+            "icon": "main_menu_icon",
+            "coord": [0.7, 0.5]
+        }
+    ],
+
+
+
+
+    "level_ui":
+    [
+        {
+            "type": "button",
+            "label": "pause_button",
+            "icon": "pause_icon",
+            "coord": [0.95, 0.1]
+        }
+    ]
+}

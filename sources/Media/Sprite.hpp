@@ -21,7 +21,7 @@ namespace Json
  */
 struct SpriteCreateInfo
 {
-    const SDL_Texture* texture      = nullptr;  // The texture of the sprite
+    const SDL_Texture* texture      = nullptr;   // The SDL texture ponter
     std::string        animation    = "";       // The file path for the animation meta data
     bool               screenCoord  = false;    // Default coordinate type is screen coordinates
     float              scrollFactor = 1.0f;     // Sprite scroll factor for parallax scrolling
@@ -46,7 +46,7 @@ public:
     // Assignment operator using sprite create info
     void operator=(const SpriteCreateInfo& info);
 
-    // Loads the texture meta data from a local file
+    // Loads the sprite meta data from a local file
     //
     // Note: This method is also called in the sprite create info constructor
     void LoadAnimations(const std::string& filepath);
@@ -69,7 +69,7 @@ public:
     // Returns the scroll factor of the sprite
     float GetScrollFactor() const;
 
-    // Modifys the alpha value of the sprite texture
+    // Modifys the alpha value of the sprite sprite
     void SetAlphaMod(uint8_t alpha);
 
     // Resets the animation assigned to the string name
@@ -81,12 +81,12 @@ public:
 private:
     // A pointer to the texture of the sprite
     //
-    // Note: 1) The value should not be nullptr. The texture itself should be set using
+    // Note: 1) The value should not be nullptr. The sprite itself should be set using
     //          the SpriteCreateInfo structure, and the meta data should be loaded using
     //          the 'LoadAnimations' method on the corresponding JSON file.
     //
-    //       2) The destruction of the sprite texture is handled by the RenderWindow
-    //          instance that loaded the texture.
+    //       2) The destruction of the sprite sprite is handled by the RenderWindow
+    //          instance that loaded the sprite.
     const SDL_Texture* m_texture;
 
     // The current animation frame of the sprite

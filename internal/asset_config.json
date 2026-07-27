@@ -3,23 +3,28 @@
     [
         {
             "name": "8_bit_music",
-            "path": "../../assets/audio/8_bit_music.wav"
+            "path": "../../assets/audio/8_bit_music.wav",
+            "predecode": false
         },
         {
             "name": "GOWR_Theme",
-            "path": "../../assets/audio/God-of-War-Ragnarok-Theme.wav"
+            "path": "../../assets/audio/God-of-War-Ragnarok-Theme.wav",
+            "predecode": false
         },
         {
             "name": "GOW_Theme",
-            "path": "../../assets/audio/God-of-War-Theme.wav"
+            "path": "../../assets/audio/God-of-War-Theme.wav",
+            "predecode": false
         },
         {
             "name": "hit_ground",
-            "path": "../../assets/audio/hit_ground.wav"
+            "path": "../../assets/audio/hit_ground.wav",
+            "predecode": true
         },
         {
             "name": "death_sound",
-            "path": "../../assets/audio/videogame-death-sound.wav"
+            "path": "../../assets/audio/videogame-death-sound.wav",
+            "predecode": true
         }
     ],
 
@@ -73,6 +78,38 @@
         {
             "name": "menu_background",
             "path": "../../assets/gfx/menu_background.png"
+        },
+        {
+            "name": "play_icon",
+            "path": "../../assets/gfx/play_icon.png"
+        },
+        {
+            "name": "settings_icon",
+            "path": "../../assets/gfx/settings_icon.png"
+        },
+        {
+            "name": "pause_icon",
+            "path": "../../assets/gfx/pause_icon.png"
+        },
+        {
+            "name": "back_icon",
+            "path": "../../assets/gfx/back_icon.png"
+        },
+        {
+            "name": "main_menu_icon",
+            "path": "../../assets/gfx/main_menu_icon.png"
+        },
+        {
+            "name": "quit_icon",
+            "path": "../../assets/gfx/quit_icon.png"
+        },
+        {
+            "name": "track_icon",
+            "path": "../../assets/gfx/track_icon.png"
+        },
+        {
+            "name": "knob_icon",
+            "path": "../../assets/gfx/knob_icon.png"
         }
     ],
 }

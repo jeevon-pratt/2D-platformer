@@ -36,7 +36,7 @@ public:
     Animation();
 
     // Adds a frame structure to the vector of frame meta data
-    void AddFrame(const Frame& frame);
+    void AddFrame(Frame frame);
 
     // Returns a boolean indicating whether the elasped time exceeds the duration
     // of the current animation frame
@@ -46,7 +46,7 @@ public:
     bool CycleCompleted() const; 
 
     // Returns the current animation frame
-    const Frame& GetCurrentFrame() const;
+    Frame GetCurrentFrame() const;
 
     // Resets the animation cycle
     void Reset();
@@ -72,6 +72,6 @@ private:
     //       when loading sprite meta data.
     std::vector<Frame> m_frames;
 
-    // An index to the current animation frame
-    uint8_t m_currentIndex;
+    // The index to the current animation frame
+    uint8_t m_index;
 };

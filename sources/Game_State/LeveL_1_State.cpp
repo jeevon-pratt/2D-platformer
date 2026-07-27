@@ -9,8 +9,8 @@
 #include "Core/Game_2D.hpp"             // Game2D class
 #include "Entity/Enemy.hpp"             // Enemy class
 #include "Entity/Game_Object.hpp"       // Game class
-#include "Entity/Sprite.hpp"            // Sprite class
 #include "Game_State/Game_State.hpp"    // Game state classes and enum
+#include "UI/Widget.hpp"                // Button::Event
 #include "Utility/Log.hpp"              // GAME_2D_LOG_DEBUG macro function
 #include "Utility/Save_System.hpp"      // SaveFileData struct, WriteToSaveFile function
 
@@ -19,81 +19,74 @@
 // IMPLEMENTATION
 // **************
 
-void Level1State::OnEnter(Game2D& app)
+void Level1State::OnEnter(Game2D& game)
 {
     GAME_2D_LOG_DEBUG("Entering Level 1 State\n");
 
-    Window::HideCursor();
+    game.m_soundTrack = game.m_assetManager.GetAudio("GOWR_Theme");
+    game.m_soundTrack.PlayLoop();
 }
 
 
 
-void Level1State::OnHandle(Game2D& app)
+void Level1State::OnHandle(Game2D& game)
 {
     static SDL_Event s_event;
 
     while (SDL_PollEvent(&s_event))
     {
-        if (s_event.type == SDL_EVENT_QUIT)
+        switch (s_event.type)
         {
-            app.m_stateManager.PopState();
-            app.m_stateManager.PushState(GAME_OVER_STATE);
-            return;
+        case SDL_EVENT_QUIT:
+            game.m_stateManager.PopState();
+            game.m_stateManager.PushState(GAME_OVER_STATE);
+            break;
+
+        case Button::Event:
+            ProcessButtonEvents(game, s_event);
+            break;
         }
 
-        app.m_window.HandleInput(s_event);
-        app.m_levelUI.HandleInput(s_event);
-        app.m_renderer.HandleInput(s_event);
+        game.m_window.HandleInput(s_event);
+        game.m_levelUI.HandleInput(s_event);
+        game.m_renderer.HandleInput(s_event);
     }
 
-    app.m_player.HandleInput();
+    game.m_player.HandleInput();
 }
 
 
 
-void Level1State::OnUpdate(Game2D& app)
+void Level1State::OnUpdate(Game2D& game)
 {
-    // Update Pause Menu
-    // =================
-
-    if (app.m_levelUI.OnClick("PAUSE_BUTTON"))
-    {
-        // The 'PopState' method is not called so that the game can transition to
-        // the previous state when in the settings menu.
-        app.m_stateManager.PushState(PAUSED_STATE);
-    }
-
-
-
     // Update Player
     // =============
 
-    app.m_player.Update();
+    game.m_player.Update();
 
-    bool     hitGround  = app.m_player.IsState(HIT_GROUND_STATE);
-    bool     playerDead = app.m_player.IsState(DEAD_STATE);
-    b2Vec2   playerPos  = app.m_player.GetPosition();
-    uint16_t winWidth   = app.m_window.GetWidth();
-    uint16_t winHeight  = app.m_window.GetHeight();
+    bool   hitGround  = game.m_player.IsState(HIT_GROUND_STATE);
+    bool   playerDead = game.m_player.IsState(DEAD_STATE);
+    b2Vec2 playerPos  = game.m_player.GetPosition();
 
-
+    static Audio groundHit = game.m_assetManager.GetAudio("hit_ground");
+    
     if (hitGround)
-        app.m_audioManager.PlayAudio("hit_ground");
-
+        groundHit.Play();
+    
     if (playerPos.y > -200.0f)
-        app.m_camera.Update(playerPos, winWidth, winHeight);
+        game.m_camera.Update(playerPos);
 
     if (playerPos.y < -400.0f)
-        app.m_player.SetHealth(0.0f);
+        game.m_player.SetHealth(0.0f);
 
 
 
     // Update Game Objects
     // ===================
 
-    app.m_objects[0].SetVelocity( b2Vec2(3.0f, 0.0f) );
+    game.m_objects[0].SetVelocity(3.0f, 0.0f);
 
-    for (GameObject& object : app.m_objects)
+    for (GameObject& object : game.m_objects)
     {
         if (object.GetPosition().x > 200.0f || object.GetPosition().y < -300.0f)
             object.Respawn();
@@ -104,12 +97,12 @@ void Level1State::OnUpdate(Game2D& app)
     // Update Enemies
     // ==============
 
-    for (Enemy& enemy : app.m_enemies)
+    for (Enemy& enemy : game.m_enemies)
     {
         b2Vec2 displacement = (playerPos - enemy.GetPosition());
 
         if (!enemy.IsDead() && displacement.Length() <= 10.0f)
-            enemy.Chase(app.m_player);
+            enemy.Chase(game.m_player);
 
         if (enemy.GetPosition().x > 400.0f || enemy.GetPosition().y < -400.0f)
             enemy.Respawn();
@@ -124,72 +117,88 @@ void Level1State::OnUpdate(Game2D& app)
     static constexpr int8_t POS_ITR = 3;    // Number of position iterations during update
 
     // Time step is converted from milliseconds to seconds
-    app.m_physicsWorld->Step(Game2D::TIME_STEP * 0.001f, VEL_ITR, POS_ITR);
+    game.m_physicsWorld->Step(Game2D::TIME_STEP * 0.001f, VEL_ITR, POS_ITR);
 
 
     if (playerDead)
     {
         std::println("You have died :(");
 
-        app.m_audioManager.PlayAudio("death_sound");
+        static Audio deathSound = game.m_assetManager.GetAudio("death_sound");
+        deathSound.Play();
 
-        app.m_player.Respawn();
+        game.m_player.Respawn();
 
-        for (GameObject& object : app.m_objects)
+        for (GameObject& object : game.m_objects)
             object.Respawn();
 
-        for (Enemy& enemy : app.m_enemies)
+        for (Enemy& enemy : game.m_enemies)
             enemy.Respawn();
     }
 
-    app.m_audioManager.PlayAudio("GOWR_Theme");
+    game.m_levelUI.Update();
 }
 
 
 
-void Level1State::OnRender(Game2D& app)
+void Level1State::OnRender(Game2D& game)
 {
-    static constexpr SDL_Color s_colorOrange { 255, 117, 24 };
-    static constexpr SDL_Color s_colorRed { 255, 0, 0 };
+    static constexpr SDL_Color ORANGE = { 255, 117, 24 };
+    static constexpr SDL_Color RED    = { 255, 0, 0 };
 
-    b2Vec2 camTransform = app.m_camera.GetTransform();
+    b2Vec2 camTransform = game.m_camera.GetTransform();
 
 
-    app.m_renderer.Clear();
-    app.m_renderer.DrawGradient(s_colorOrange, s_colorRed, 100.0f);
+    game.m_renderer.Clear();
+    game.m_renderer.DrawGradient(ORANGE, RED, 100.0f);
 
-    for (const auto& [sprite, pos] : app.m_backgroundLayer)
-        app.m_renderer.Render(sprite, pos, camTransform);
+    for (const auto& [sprite, pos] : game.m_backgroundLayer)
+        game.m_renderer.Render(sprite, pos, camTransform);
 
-    for (const GameObject& object : app.m_objects)
-        app.m_renderer.Render(object, camTransform);
+    for (const GameObject& object : game.m_objects)
+        game.m_renderer.Render(object, camTransform);
 
-    for (const Enemy& enemy : app.m_enemies)
-        app.m_renderer.Render(enemy, camTransform);
+    for (const Enemy& enemy : game.m_enemies)
+        game.m_renderer.Render(enemy, camTransform);
 
-    app.m_renderer.Render(app.m_player, camTransform);
+    game.m_renderer.Render(game.m_player, camTransform);
 
-    for (const auto& [sprite, pos] : app.m_foregroundLayer)
-        app.m_renderer.Render(sprite, pos, camTransform);
+    for (const auto& [sprite, pos] : game.m_foregroundLayer)
+        game.m_renderer.Render(sprite, pos, camTransform);
 
-    app.m_renderer.Render( app.m_perfMonitor );
-    app.m_renderer.Display();
+    game.m_renderer.Render(game.m_levelUI);
+    game.m_renderer.Render(game.m_perfMonitor);
+    game.m_renderer.Display();
     
-    app.m_perfMonitor.CalculateFrameRate();
+    game.m_perfMonitor.CalculateFrameRate();
 }
 
 
 
-void Level1State::OnExit(Game2D& app)
+void Level1State::OnExit(Game2D& game)
 {
     GAME_2D_LOG_DEBUG("Exiting Level 1 State\n");
 
-    app.m_audioManager.PauseAudio("8_bit_music");
+    game.m_soundTrack.Pause();
 
     SaveFileData data;
     data.level        = LEVEL_1_STATE;
-    data.playerPos    = app.m_player.GetPosition();
-    data.playerHealth = app.m_player.GetHealth();
+    data.playerPos    = game.m_player.GetPosition();
+    data.playerHealth = game.m_player.GetHealth();
 
     WriteToSaveFile(data);
+}
+
+
+
+// ******************
+// INTERNAL FUNCTIONS
+// ******************
+
+void Level1State::ProcessButtonEvents(Game2D& game, const SDL_Event& event)
+{
+    std::string label = static_cast<const char*>(event.user.data1);
+
+    if (label == "pause_button")
+        game.m_stateManager.PushState(PAUSED_STATE);
 }

@@ -1,9 +1,7 @@
-#include <SDL3/SDL_error.h>             // SDL_GetError function
 #include <SDL3/SDL_render.h>            // SDL Renderer functions
-#include <SDL3/SDL_surface.h>           // SDL_FreeSurface function
-#include <SDL3_ttf/SDL_ttf.h>           // TTF_Font struct
 
 #include <cstdlib>                      // std::exit, EXIT_FAILURE
+#include <memory>                       // std::unique_ptr
 #include <numbers>                      // std::numbers::pi
 
 #include "imgui.h"                      // ImGui functionality
@@ -11,11 +9,11 @@
 #include "imgui_impl_sdlrenderer3.h"    // ImGui_ImplSDLRenderer3 functionality
 
 #include "Entity/Game_Object.hpp"       // GameObject class
-#include "Entity/Sprite.hpp"            // Sprite class
 #include "Media/Renderer.hpp"           // Renderer class
-#include "Media/Text.hpp"               // Text class
-#include "Media/User_Interface.hpp"     // UserInterface class
+#include "Media/Sprite.hpp"             // Sprite class
 #include "Media/Window.hpp"             // Window class
+#include "UI/Menu.hpp"                  // Menu class
+#include "UI/Widget.hpp"                // Widget classes
 #include "Utility/Log.hpp"              // Log macro functions
 #include "Utility/Math.hpp"             // RoundToInt and ConvertToScreenCoord functions
 #include "Utility/Perf_Monitor.hpp"     // PerfMonitor class
@@ -26,10 +24,7 @@
 // **************
 
 Renderer::Renderer(const Window& window):
-    m_rendererContext (nullptr),
-    m_imGuiContext    (false),
-    m_imGuiSDL3       (false),
-    m_imGuiRenderer   (false)
+    m_rendererContext (nullptr)
 {
     // Initialization of SDL Renderer
     // ==============================
@@ -56,15 +51,13 @@ Renderer::Renderer(const Window& window):
 
     IMGUI_CHECKVERSION();
 
-    if ( !ImGui::CreateContext() )
+    if (!ImGui::CreateContext())
     {
-        GAME_2D_LOG_ERROR("Failed to create the ImGui context\n");
-        return;
+        GAME_2D_LOG_CRITICAL("Failed to create the ImGui context\n");
+        std::exit(EXIT_FAILURE);
     }
 
     ImGui::GetIO().FontGlobalScale = 2.0f;
-
-    m_imGuiContext = true;
 
 
 
@@ -73,14 +66,11 @@ Renderer::Renderer(const Window& window):
 
     GAME_2D_LOG_DEBUG("Initializing ImGui SDL3 backend\n");
 
-    if ( !ImGui_ImplSDL3_InitForSDLRenderer(windowContext, rendererContext) )
+    if (!ImGui_ImplSDL3_InitForSDLRenderer(windowContext, rendererContext))
     {
-        GAME_2D_LOG_ERROR("Failed to initialize ImGui SDL3 backend\n");
-        return;
+        GAME_2D_LOG_CRITICAL("Failed to initialize ImGui SDL3 backend\n");
+        std::exit(EXIT_FAILURE);
     }
-
-    m_imGuiSDL3 = true;
-
 
 
 
@@ -89,13 +79,11 @@ Renderer::Renderer(const Window& window):
 
     GAME_2D_LOG_DEBUG("Initializing ImGui SDL3 renderer backend\n");
 
-    if ( !ImGui_ImplSDLRenderer3_Init(rendererContext) )
+    if (!ImGui_ImplSDLRenderer3_Init(rendererContext))
     {
-        GAME_2D_LOG_ERROR("Failed to initialize ImGui SDL3 Renderer backend\n");
-        return;
+        GAME_2D_LOG_CRITICAL("Failed to initialize ImGui SDL3 Renderer backend\n");
+        std::exit(EXIT_FAILURE);
     }
-    
-    m_imGuiRenderer = true;
 }
 
 
@@ -107,22 +95,21 @@ const SDL_Renderer* Renderer::GetContext() const
 
 
 
-void Renderer::HandleInput(const SDL_Event& event) const
+void Renderer::HandleInput(const SDL_Event& event)
 {
-    if (m_imGuiSDL3 && m_imGuiRenderer)
-        ImGui_ImplSDL3_ProcessEvent(&event);
+    ImGui_ImplSDL3_ProcessEvent(&event);
 }
 
 
 
-void Renderer::Clear() const
+void Renderer::Clear()
 {
     SDL_RenderClear(m_rendererContext);
 }
 
 
 
-void Renderer::DrawGradient(SDL_Color color1, SDL_Color color2, float steps) const
+void Renderer::DrawGradient(SDL_Color color1, SDL_Color color2, float steps)
 {
     int winWidth  = 0;
     int winHeight = 0;
@@ -156,12 +143,12 @@ void Renderer::DrawGradient(SDL_Color color1, SDL_Color color2, float steps) con
 
 
 
-void Renderer::Render(const Sprite& sprite, b2Vec2 pos, b2Vec2 camTransform) const
+void Renderer::Render(const Sprite& sprite, b2Vec2 position, b2Vec2 camTransform)
 {
-    b2Vec2 screenCoord = pos;
+    b2Vec2 screenCoord = position;
 
     if (!sprite.UseScreenCoord())
-        screenCoord = ConvertToScreenCoord(sprite, pos, camTransform);
+        screenCoord = ConvertToScreenCoord(sprite, position, camTransform);
 
     SDL_FRect dstrect;
     dstrect.x = screenCoord.x;
@@ -169,20 +156,15 @@ void Renderer::Render(const Sprite& sprite, b2Vec2 pos, b2Vec2 camTransform) con
     dstrect.w = sprite.GetFrameWidth();
     dstrect.h = sprite.GetFrameHeight();
 
-
     SDL_RenderTexture(m_rendererContext,
                       const_cast<SDL_Texture*>(sprite.GetTexture()),
                       &sprite.GetSourceRect(),
                       &dstrect);
-
-    // Note: const_cast is used on the object texture because a constant Sprite instance is passed
-    //       into the Render function but the 'SDL_RenderTextureEx' function requires a non-const
-    //       SDL_Texture pointer.
 }
 
 
 
-void Renderer::Render(const GameObject& object, b2Vec2 camTransform) const
+void Renderer::Render(const GameObject& object, b2Vec2 camTransform)
 {
     b2Vec2 screenCoord = ConvertToScreenCoord(object.GetSprite(), object.GetPosition(), camTransform);
 
@@ -192,7 +174,6 @@ void Renderer::Render(const GameObject& object, b2Vec2 camTransform) const
     dstrect.w = object.GetFrameWidth();
     dstrect.h = object.GetFrameHeight();
 
-
     SDL_RenderTextureRotated(m_rendererContext,
                              const_cast<SDL_Texture*>( object.GetTexture() ),
                              &object.GetSourceRect(),
@@ -200,55 +181,69 @@ void Renderer::Render(const GameObject& object, b2Vec2 camTransform) const
                              -object.GetAngle() * (180.0 / std::numbers::pi),
                              nullptr,
                              object.IsInverted() ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
-
-    // Note: 1) const_cast is used on the object texture because a constant Sprite instance is passed
-    //          into the Render function but the 'SDL_RenderTextureEx' function requires a non-const
-    //          SDL_Texture pointer.
-    //
-    //       2) The angle is negated due to the inversion of the y-axis by 'ConvertToScreenCoord'.
 }
 
 
 
-void Renderer::Render(const Text& text, b2Vec2 screenCoord) const
+void Renderer::Render(const Text& text)
 {
-    TTF_Font* font = const_cast<TTF_Font*>(text.font);
+   m_textRenderer.Render(m_rendererContext, text);
+}
 
-    SDL_Surface* surfaceData = TTF_RenderText_Solid(font, text.str.data(), 0, text.color);
-    SDL_Texture* textureData = SDL_CreateTextureFromSurface(m_rendererContext, surfaceData);
+
+
+void Renderer::Render(const Button& button)
+{
+    SDL_Texture* icon = const_cast<SDL_Texture*>(button.icon);
+
+    auto [r, g, b, _] = button.GetColorMod();
 
     SDL_FRect dstrect;
-    dstrect.x = screenCoord.x;
-    dstrect.y = screenCoord.y;
-    dstrect.w = (surfaceData ? surfaceData->w : 0.0f);
-    dstrect.h = (surfaceData ? surfaceData->h : 0.0f);
+    dstrect.x = button.GetPosition().x;
+    dstrect.y = button.GetPosition().y;
+    dstrect.w = button.GetWidth();
+    dstrect.h = button.GetHeight();
 
-
-    SDL_RenderTexture(m_rendererContext, textureData, nullptr, &dstrect);
-    SDL_DestroySurface(surfaceData);
-    SDL_DestroyTexture(textureData);
-
-    // Note: const_cast is used because a constant Text instance is passed into the Render function
-    //       but the' TTF_RenderText_Solid' function requires a non-const TTF_Font pointer.
+    SDL_SetTextureColorMod(icon, r, g, b);
+    SDL_RenderTexture(m_rendererContext, icon, nullptr, &dstrect);
+    SDL_SetTextureColorMod(icon, 255, 255, 255);
 }
 
 
 
-void Renderer::Render(const UserInterface& interface) const
+void Renderer::Render(const Slider& slider)
 {
-    Render(interface.GetBackground(), b2Vec2(0.0f, 0.0f));
+    SDL_Texture* trackIcon = const_cast<SDL_Texture*>(slider.trackIcon);
+    SDL_Texture* knobIcon  = const_cast<SDL_Texture*>(slider.knobIcon);
 
-    for (const Button& button : interface.GetButtons())
-        Render(button.image, button.pos);
+    SDL_FRect dstrect;
+    dstrect.x = slider.GetPosition().x;
+    dstrect.y = slider.GetPosition().y;
+    dstrect.w = slider.GetWidth();
+    dstrect.h = slider.GetHeight();
+
+    SDL_RenderTexture(m_rendererContext, trackIcon, nullptr, &dstrect);
+
+    dstrect.x = slider.GetKnobPosition().x;
+    dstrect.y = slider.GetKnobPosition().y;
+    dstrect.w = slider.GetKnobWidth();
+    dstrect.h = slider.GetKnobHeight();
+
+    SDL_RenderTexture(m_rendererContext, knobIcon, nullptr, &dstrect);
 }
 
 
 
-void Renderer::Render(const PerfMonitor& monitor) const
+void Renderer::Render(const Menu& menu)
 {
-    if (!m_imGuiContext || !m_imGuiSDL3 || !m_imGuiRenderer)
-        return;
+    for (const std::unique_ptr<Widget>& widget : menu.GetWidgets())
+        widget->OnRender(*this);
+}
 
+
+
+void Renderer::Render(const PerfMonitor& monitor)
+{
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
@@ -264,7 +259,7 @@ void Renderer::Render(const PerfMonitor& monitor) const
 
 
 
-void Renderer::Display() const
+void Renderer::Display()
 {
     SDL_RenderPresent(m_rendererContext);
 }
@@ -273,23 +268,14 @@ void Renderer::Display() const
 
 Renderer::~Renderer()
 {
-    if (m_imGuiRenderer)
-    {
-        GAME_2D_LOG_DEBUG("Denitializing ImGui SDL3 renderer backend\n");
-        ImGui_ImplSDLRenderer3_Shutdown();
-    }
+    GAME_2D_LOG_DEBUG("Denitializing ImGui SDL3 renderer backend\n");
+    ImGui_ImplSDLRenderer3_Shutdown();
 
-    if (m_imGuiSDL3)
-    {
-        GAME_2D_LOG_DEBUG("Denitializing ImGui SDL3 backend\n");
-        ImGui_ImplSDL3_Shutdown();
-    }
+    GAME_2D_LOG_DEBUG("Denitializing ImGui SDL3 backend\n");
+    ImGui_ImplSDL3_Shutdown();
 
-    if (m_imGuiContext)
-    {
-        GAME_2D_LOG_DEBUG("Denitializing ImGui context\n");
-        ImGui::DestroyContext();
-    }
+    GAME_2D_LOG_DEBUG("Denitializing ImGui context\n");
+    ImGui::DestroyContext();
 
     GAME_2D_LOG_DEBUG("Denitializing SDL3 renderer context\n");
     SDL_DestroyRenderer(m_rendererContext);

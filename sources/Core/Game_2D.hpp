@@ -11,16 +11,15 @@
 #include "Entity/Enemy.hpp"                         // Enemy class
 #include "Entity/Game_Object.hpp"                   // GameObject class
 #include "Entity/Player.hpp"                        // Player class
-#include "Entity/Sprite.hpp"                        // Sprite class
 #include "Game_State/Game_State.hpp"                // GAME_STATE_TYPE enum
 #include "Game_State/Game_State_Manager.hpp"        // GameStateManager class
-#include "Media/Audio.hpp"                          // AudioManager class
+#include "Media/Asset.hpp"                          // AssetManager class
+#include "Media/Audio.hpp"                          // Audio class
 #include "Media/Camera.hpp"                         // Camera class
-#include "Media/Texture_Manager.hpp"                // TextureManager class
 #include "Media/Renderer.hpp"                       // Renderer class
-#include "Media/Text.hpp"                           // FontManager class
-#include "Media/User_Interface.hpp"                 // UserInterface class
+#include "Media/Sprite.hpp"                         // Sprite class
 #include "Media/Window.hpp"                         // Window class
+#include "UI/Menu.hpp"                              // Menu class
 #include "Utility/Perf_Monitor.hpp"                 // PerfMonitor class
 
 
@@ -66,17 +65,8 @@ private:
     // Loads texture, audio, and font data
     void LoadAssets();
 
-    // Creates the main menu user interface
-    void CreateMainMenu();
-
-    // Creates the settings menu user interface
-    void CreateSettingsMenu();
-
-    // Creates the pause menu user interface
-    void CreatePauseMenu();
-
-    // Creates the level user interface
-    void CreateLevelUI();
+    // Creates the game menus
+    void CreateMenus();
 
     // Creates the game object instances
     void CreateObjects();
@@ -105,23 +95,23 @@ private:
     // Windows and Widgets
     // ===================
 
-    // Game window object
+    // Game window
     Window m_window;
 
-    // Game renderer object
+    // Game renderer
     Renderer m_renderer;
 
-    // The interface for the main menu
-    UserInterface m_mainMenu;
+    // The main menu
+    Menu m_mainMenu;
 
-    // The interface for the settings menu
-    UserInterface m_settingsMenu;
+    // The settings menu
+    Menu m_settingsMenu;
 
-    // The interface for the pause menu
-    UserInterface m_pauseMenu;
+    // The pause menu
+    Menu m_pauseMenu;
 
-    // The in-game pause UI
-    UserInterface m_levelUI;
+    // The in-game level UI
+    Menu m_levelUI;
 
 
 
@@ -136,14 +126,11 @@ private:
     // Assets
     // ======
 
-    // Manages the game audio.
-    AudioManager m_audioManager;
+    // Manages the Audio, Font, and Texture assets.
+    AssetManager m_assetManager;
 
-    // Manages the text fonts used in the game
-    FontManager m_fontManager;
-
-    // Manages the game textures
-    TextureManager m_textureManager;
+    // Music soundtrack for game
+    Audio m_soundTrack;
 
 
 

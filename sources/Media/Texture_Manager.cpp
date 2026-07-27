@@ -1,9 +1,11 @@
+#include <json/value.h>                 // Json::Value class
 #include <SDL3/SDL_render.h>            // SDL_Renderer struct, SDL_DestroyTexture function
 #include <SDL3_image/SDL_image.h>       // IMG_LoadTexture functions
 
-#include "Media/Texture_Manager.hpp"    // TextureManager class
+#include "Media/Asset.hpp"              // TextureManager class
 #include "Media/Renderer.hpp"           // Renderer class
-#include "Utility/Log.hpp"              // GAME_2D_LOG_DEBUG and GAME_2D_LOG_ERROR macro functions
+#include "Utility/Assert.hpp"           // GAME_2D_ASSERT macro function
+#include "Utility/Log.hpp"              // Log macro functions
 
 
 // ******************
@@ -19,20 +21,23 @@ static constexpr uint16_t MAX_TEXTURES = 100;
 // **************
 
 TextureManager::TextureManager(const Renderer& renderer):
-    m_rendererContext ( renderer.GetContext() )
+    m_rendererContext (renderer.GetContext())
 {
-    m_textures.reserve(MAX_TEXTURES);
+    m_registry.reserve(MAX_TEXTURES);
 }
 
 
 
-void TextureManager::LoadTexture(const std::string& name, const std::string& filepath)
+void TextureManager::LoadTexture(const Json::Value& asset)
 {
-    GAME_2D_LOG_DEBUG("Loading texture: %s\n", filepath.data());
+    const char* name = asset["name"].asCString();
+    const char* path = asset["path"].asCString();
+
+    GAME_2D_LOG_DEBUG("Loading texture: %s\n", path);
 
 
-    SDL_Renderer* context = const_cast<SDL_Renderer*>(m_rendererContext);
-    SDL_Texture*  texture = IMG_LoadTexture(context, filepath.data());
+    SDL_Renderer* renderer = const_cast<SDL_Renderer*>(m_rendererContext);
+    SDL_Texture*  texture  = IMG_LoadTexture(renderer, path);
 
     if (!texture)
     {
@@ -40,29 +45,31 @@ void TextureManager::LoadTexture(const std::string& name, const std::string& fil
         return;
     }
 
-    m_textures.emplace(name, texture);
+    m_registry.emplace(name, texture);
+
+    GAME_2D_ASSERT(m_registry.size() <= MAX_TEXTURES);
 }
 
 
 
-const SDL_Texture* TextureManager::Get(const std::string& name) const
+const SDL_Texture* TextureManager::GetTexture(const std::string& name) const
 {
-    if ( !m_textures.contains(name) )
+    if (!m_registry.contains(name))
     {
         GAME_2D_LOG_ERROR("Could not find texture %s\n", name.data());
         return nullptr;
     }
 
-    return m_textures.at(name);
+    return m_registry.at(name);
 }
 
 
 
 TextureManager::~TextureManager()
 {
-    for (auto& [name, texture] : m_textures)
+    for (auto& [name, texture] : m_registry)
     {
         GAME_2D_LOG_DEBUG("Destroying texture: %s\n", name.data());
-        SDL_DestroyTexture( const_cast<SDL_Texture*>(texture) );
+        SDL_DestroyTexture(texture);
     }
 }

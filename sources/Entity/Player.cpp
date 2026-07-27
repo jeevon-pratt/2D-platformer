@@ -3,12 +3,12 @@
 #include <box2d/b2_world.h>                 // b2World class
 #include <json/value.h>                     // Json::Value class
 
+#include <algorithm>                        // std::clamp
 #include <utility>                          // std::move
 
 #include "Entity/Player.hpp"                // Player class
 #include "Player_State/Player_State.hpp"    // PlayerStateID enum
 #include "Utility/Assert.hpp"               // GAME_2D_ASSERT macro function
-#include "Utility/Math.hpp"                 // Clamp function
 
 
 // **************
@@ -64,15 +64,15 @@ void Player::CreateHitBox(b2World& world, const Json::Value& player)
     b2Vec2 vertex1(-hx, -hy);
     b2Vec2 vertex2( hx, -hy);
 
-
     b2EdgeShape edge;
     edge.SetTwoSided(vertex1, vertex2);
 
     b2FixtureDef def;
-    def.shape       = &edge;
-    def.density     = player["density"].asFloat();
-    def.friction    = player["friction"].asFloat();
-    def.restitution = player["restitution"].asFloat();
+    def.shape            = &edge;
+    def.density          = player["density"].asFloat();
+    def.friction         = player["friction"].asFloat();
+    def.restitution      = player["restitution"].asFloat();
+    def.userData.pointer = static_cast<uintptr_t>(true);
 
     m_groundSensor = m_body->CreateFixture(&def);
 }
@@ -110,8 +110,7 @@ bool Player::IsState(PlayerStateID state) const
 void Player::SetHealth(float health)
 {
     m_health = health;
-
-    Clamp(m_health, 0.0f, 100.0f);
+    m_health = std::clamp(m_health, 0.0f, 100.0f);
 }
 
 

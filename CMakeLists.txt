@@ -32,23 +32,10 @@ endif()
 # IMGUI SOURCE FILES
 # ******************
 
-set(IMGUI_SOURCES
-    vendor/imgui/imconfig.h
-    vendor/imgui/imgui.cpp
-    vendor/imgui/imgui.h
-    vendor/imgui/imgui_demo.cpp
-    vendor/imgui/imgui_draw.cpp
-    vendor/imgui/imgui_internal.h
-    vendor/imgui/imgui_tables.cpp
-    vendor/imgui/imgui_widgets.cpp
-    vendor/imgui/imstb_rectpack.h
-    vendor/imgui/imstb_textedit.h
-    vendor/imgui/imstb_truetype.h
-    vendor/imgui/backends/imgui_impl_sdl3.cpp
-    vendor/imgui/backends/imgui_impl_sdl3.h
-    vendor/imgui/backends/imgui_impl_sdlrenderer3.cpp
-    vendor/imgui/backends/imgui_impl_sdlrenderer3.h
-)
+file(GLOB_RECURSE IMGUI_SOURCES
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/*.h")
 
 
 
@@ -100,6 +87,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 find_package(SDL3       CONFIG REQUIRED)
 find_package(SDL3_image CONFIG REQUIRED)
+find_package(SDL3_mixer CONFIG REQUIRED)
 find_package(SDL3_ttf   CONFIG REQUIRED)
 find_package(box2d      CONFIG REQUIRED)
 find_package(jsoncpp    CONFIG REQUIRED)
@@ -113,6 +101,7 @@ find_package(jsoncpp    CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     SDL3::SDL3
     SDL3_image::SDL3_image
+    SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf
     box2d::box2d
     JsonCpp::JsonCpp
